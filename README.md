@@ -1,6 +1,6 @@
 # Mainstay_ProjectIntake
-```json
-"User Object"
+```
+User Object
 {
   username: { type: String, required: true },
   password: { type: String, required: true },
