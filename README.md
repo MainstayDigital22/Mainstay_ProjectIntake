@@ -1,4 +1,5 @@
 # Mainstay_ProjectIntake
+```json
 User Object
 {
   username: { type: String, required: true },
@@ -19,20 +20,20 @@ WebsiteForm Object
     primaryContactName: { type: String, required: true },
     name: { type: String, required: true },
     email: { type: String, required: true },
-    socials: \[String\],
+    socials: [String],
     branding: {
-        files: \[String\], //array of media urls
+        files: [String], //array of media urls
         colorCodes: {
-            type: \[String\],
+            type: [String],
             validate: {
             validator: function(v) {
                 return v.every(hexColorValidator); //const hexColorValidator = (v) => /^#(?:\[0-9a-fA-F\]{3}){1,2}$/.test(v);
             },
-            message: props => \`${props.value} contains invalid hexadecimal color code\`
+            message: props => `${props.value} contains invalid hexadecimal color code`
             }
         },
-        fonts: \[String\],
-        designDocument:\[String\], //array of media urls
+        fonts: [String],
+        designDocument:[String], //array of media urls
     },
     hosting: {
         type:{
@@ -73,3 +74,4 @@ BotConfigForm Object
 {
 
 }
+```
