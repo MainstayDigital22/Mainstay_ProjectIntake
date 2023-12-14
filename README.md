@@ -16,7 +16,7 @@ WebsiteForm Object
 {
     username: { type: String, required: true }, //username for accessing our portal
     companyName: { type: String, required: true },
-    websiteURL: { type: String, required: true },
+    websiteUrl: { type: String, required: true },
     primaryContactName: { type: String, required: true },
     name: { type: String, required: true },
     email: { type: String, required: true },
@@ -72,6 +72,22 @@ WebsiteForm Object
 
 BotConfigForm Object
 {
-
+    name: { type: String, required: true },
+    avatar: { type: String, required: true }, //icon url
+    greetingMessage: String,
+    model: String,
+    training: {
+        files: [String] //file url
+        urls: [String]
+        pinecone: { //or are we making the pinecone DB for them?
+            type: {
+                url: { type: String, required: true }, 
+                APIKey: { type: String, required: true },
+            },
+            required: false
+        }
+        basePrompt: String,
+        restrictions: String,
+    }
 }
 ```
