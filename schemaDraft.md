@@ -66,7 +66,11 @@ WebsiteForm Object
             password: { type: String, required: true }
         },
         required: false
-    }
+    },
+    budget: { type: Number, required: true }, 
+    SEOKeywords: [String],
+    legalDocuments: [String], //urls
+    comments: String //anything additional
 }
 
 BotConfigForm Object
