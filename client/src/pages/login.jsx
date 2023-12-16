@@ -132,19 +132,9 @@ const Login = () => {
           const user = await JSON.stringify(res.data);
           await localStorage.setItem("user", user);
           const json = await JSON.parse(localStorage.getItem("user"));
-          console.log(json);
+          console.log(json);window.location.href = "/";
 
-          axios.get("https://api.ipify.org/?format=json").then((res) => {
-            axios
-              .post(`http://${HOST}:8080/log/add`, {
-                username: getAuthUser(),
-                action: "Login",
-                comments: `User ${getAuthUser()} login from IP ${res.data.ip}`,
-              })
-              .then(() => {
-                window.location.href = "/";
-              });
-          });
+          
         }
       })
       .catch(async (err) => {
