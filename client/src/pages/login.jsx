@@ -2,54 +2,133 @@ import { useState } from "react";
 import axios from "axios";
 import { createGlobalStyle } from "styled-components";
 import { HOST } from "../const";
-import { getAuthUser } from "../components/auth";
+import building from "../assets/building.jpg";
+import "bootstrap/dist/css/bootstrap.min.css";
+const Login = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [errmsg, setErr] = useState("");
+  function login(username, password) {
+    axios
+      .post(`http://${HOST}:8080/user/login`, {
+        username: username,
+        password: password,
+      })
+      .then(async (res) => {
+        console.log(res);
+        if (res.status == 200) {
+          const user = await JSON.stringify(res.data);
+          await localStorage.setItem("user", user);
+          const json = await JSON.parse(localStorage.getItem("user"));
+          console.log(json);
+          window.location.href = "/";
+        }
+      })
+      .catch(async (err) => {
+        setErr(err.response.data);
+      });
+  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await login(username, password);
+  };
+
+  return (
+    <div className="container-p">
+      <div className="row limit">
+        <div className="col-6 split">
+          <img src={building} style={{ height: "100%" }} />
+        </div>
+        <div className="col-6 split">
+          <form className="login" onSubmit={handleSubmit}>
+            <GlobalStyles />
+            <div style={{ justifyContent: "center", textAlign: "center" }}>
+              <h3>Log In</h3>
+              <p style={{ fontSize: 11, marginTop: -6, color: "#999999" }}>
+                Enter your credentials to get started
+              </p>
+            </div>
+
+            <label>Username:</label>
+            <input
+              type="username"
+              onChange={(e) => setUsername(e.target.value)}
+              value={username}
+            />
+            <label>Password:</label>
+            <input
+              type="password"
+              onChange={(e) => setPassword(e.target.value)}
+              value={password}
+            />
+
+            <button>Log in</button>
+            {errmsg ? <label style={{ color: "red" }}>{errmsg}</label> : <></>}
+            <span
+              style={{
+                display: "flex",
+                justifyContent: "right",
+                marginTop: 12,
+                fontSize: 15,
+              }}>
+              <p style={{ display: "inline-block" }}>
+                Need an account?&nbsp;&nbsp;
+              </p>
+              <a href="/signup">
+                <p style={{ display: "inline-block", color: "#0b59ef" }}>
+                  Sign Up
+                </p>
+              </a>
+            </span>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
+
 const GlobalStyles = createGlobalStyle`
 /* google font */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&family=VT323&display=swap');
 
 /* layout */
 :root {
-  --primary: #1aac83;
+  --primary: #0b59ef;
   --error: #e7195a;
 }
 body {
   background: #f1f1f1;
-  margin: 0;
   font-family: "Poppins";
+}
+.limit{
+  height: 100vh;
 }
 header {
   background: #fff;
 }
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.container-p {
+  width:98%;
 }
 header a {
   color: #333;
   text-decoration: none;
 }
-.pages{
-  max-width: 1400px;
-  padding: 20px;
-  margin: 0 auto;
-}
-
-/* homepage */
-.home {
-  display: grid;
-  grid-template-columns: 3fr 1fr;
-  gap: 100px;
+.split{
+  height:100%;
+  display:flex;
+  justify-content:center;
+  overflow:hidden;
 }
 
 /* new workout form */
 label, input {
+  
   display: block;
 }
 input {
+  
   padding: 10px;
   margin-top: 10px;
   margin-bottom: 20px;
@@ -59,9 +138,11 @@ input {
   box-sizing: border-box;
 }
 form button {
+  
   background: var(--primary);
   border: 0;
   color: #fff;
+  width: 100%;
   padding: 10px;
   font-family: "Poppins";
   border-radius: 4px;
@@ -79,11 +160,6 @@ input.error {
   border: 1px solid var(--error);
 }
 
-/* navbar */
-nav {
-  display: flex;
-  align-items: center;
-}
 nav a, nav button {
   margin-left: 10px;
 }
@@ -100,9 +176,9 @@ nav button {
 
 /* auth forms */
 form.signup, form.login {
-  max-width: 400px;
-  margin: 40px auto;
-  padding: 20px;
+  width: 400px;
+  margin:auto;
+  padding: 20px 20px 0px 20px;
   background: #fff;
   border-radius: 4px;
 }
@@ -115,59 +191,3 @@ form.signup, form.login {
     border-radius: 4px;
   }
 `;
-
-const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [errmsg, setErr] = useState("");
-  function login(username, password) {
-    axios
-      .post(`http://${HOST}:8080/user/login`, {
-        username: username,
-        password: password,
-      })
-      .then(async (res) => {
-        console.log(res);
-        if (res.status == 200) {
-          const user = await JSON.stringify(res.data);
-          await localStorage.setItem("user", user);
-          const json = await JSON.parse(localStorage.getItem("user"));
-          console.log(json);window.location.href = "/";
-
-          
-        }
-      })
-      .catch(async (err) => {
-        setErr(err.response.data);
-      });
-  }
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    await login(username, password);
-  };
-
-  return (
-    <form className="login" onSubmit={handleSubmit}>
-      <GlobalStyles />
-      <h3>Log In</h3>
-
-      <label>Username:</label>
-      <input
-        type="username"
-        onChange={(e) => setUsername(e.target.value)}
-        value={username}
-      />
-      <label>Password:</label>
-      <input
-        type="password"
-        onChange={(e) => setPassword(e.target.value)}
-        value={password}
-      />
-
-      <button>Log in</button>
-      {errmsg ? <label style={{ color: "red" }}>{errmsg}</label> : <></>}
-    </form>
-  );
-};
-
-export default Login;
