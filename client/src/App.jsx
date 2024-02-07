@@ -3,7 +3,16 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import { Protected, Header } from "./components";
-import { Review, Login, Create, Page403, Home, Details, Users } from "./pages";
+import {
+  Review,
+  Login,
+  Create,
+  Page403,
+  Home,
+  Details,
+  Users,
+  SignUp,
+} from "./pages";
 
 const App = () => {
   return (
@@ -13,7 +22,7 @@ const App = () => {
         <Route
           path="/review"
           element={
-            <Protected minauth={2}>
+            <Protected perms={["admin"]}>
               <Header />
               <Review />
             </Protected>
@@ -22,7 +31,7 @@ const App = () => {
         <Route
           path="/review/:id"
           element={
-            <Protected minauth={2}>
+            <Protected perms={["admin"]}>
               <Header />
               <Details />
             </Protected>
@@ -31,7 +40,7 @@ const App = () => {
         <Route
           path="/create"
           element={
-            <Protected minauth={2}>
+            <Protected perms={["admin", "staff", "user"]}>
               <Header />
               <Create />
             </Protected>
@@ -40,7 +49,7 @@ const App = () => {
         <Route
           path="/users"
           element={
-            <Protected minauth={0}>
+            <Protected perms={["admin"]}>
               <Header />
               <Users />
             </Protected>
@@ -49,13 +58,14 @@ const App = () => {
         <Route
           path="/"
           element={
-            <Protected minauth={3}>
+            <Protected perms={["admin", "staff", "user"]}>
               <Header />
               <Home />
             </Protected>
           }
         />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
       </Routes>
     </Router>
   );

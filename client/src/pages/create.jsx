@@ -3,7 +3,6 @@ import { createGlobalStyle } from "styled-components";
 import axios from "axios";
 import { getAuthToken, getAuthUser } from "../components/auth";
 import { HOST } from "../const";
-import { Editor } from "@tinymce/tinymce-react";
 const GlobalStyles = createGlobalStyle`
 .error {
   border-color: red;
@@ -14,7 +13,8 @@ const GlobalStyles = createGlobalStyle`
   margin-top: 5px;
 }
 h5{
-  font-weight:1000;
+  font-weight:500;
+  font-size:18px;
 }
 @media only screen and (max-width: 1199px) {
     .navbar{
@@ -27,117 +27,134 @@ h5{
       color: #fff !important;
     }
   }
+  .gap{
+    padding:10px;
+  }
+  .tab{
+    padding:30px;
+    margin: auto;
+    gap: 30px;
+    border-bottom-left-radius:15px;
+    border-bottom-right-radius:15px;
+    border: 1px solid #dddddd;
+    background-color: #fafafa;
+  }
+  .tabupper{
+    margin: auto;
+    padding-left:10px;
+    padding-top:7px;
+    border-top-left-radius:15px;
+    border-top-right-radius:15px;
+    border: 1px solid #dddddd;
+    background-color: #ffffff;
+  }
+  .no-select {
+    -webkit-user-select: none; 
+    -moz-user-select: none;
+    -ms-user-select: none; 
+    user-select: none;
+  }
 `;
 
 export default class Create extends Component {
   constructor() {
     super();
-    this.onChangeMultiple = this.onChangeMultiple.bind(this);
     this.state = {
-      files: [],
-      tab: 1,
-      title: "",
-      subtitle: "",
-      desc: "",
-      name: "",
-      tags: [],
-      englishName: "",
-      year: undefined,
-      nameError: "",
-      titleError: "",
-      englishNameError: "",
-      yearError: "",
-      descError: "",
+      showBrandingDropdown: false,
+      showHostingDropdown: false,
+      showFTPDropdown: false,
+      showControlDropdown: false,
+      showDomainDropdown: false,
+      companyName: "",
+      primaryContactName: "",
+      websiteURL: "",
+
+      email: "",
+      colorCodes: "",
+      fonts: "",
+      brandingFiles: [],
+      brandingDesignDocuments: [],
+      legalDocuments: [],
+      hostingProvider: "",
+      hostingUsername: "",
+      hostingPassword: "",
+      ftpProvider: "",
+      ftpUsername: "",
+      ftpPassword: "",
+      ftpLiveDirectory: "",
+      controlURL: "",
+      controlUsername: "",
+      controlPassword: "",
+      domainProvider: "",
+      domainUsername: "",
+      domainPassword: "",
+      budget: "",
+      deadline: "",
+      seoKeywords: "",
+      comments: "",
       actionLock: false,
-      type: 1,
     };
   }
-  handleEditorChange = (content, editor) => {
-    this.setState({ desc: content });
-    if (!content.trim()) {
-      this.setState({ descError: "Description cannot be blank" });
+  toggleDropdown = (dropdown) => {
+    this.setState((prevState) => ({
+      [dropdown]: !prevState[dropdown],
+    }));
+  };
+  handleChange = (event) => {
+    const { name, value } = event.target;
+    this.setState({ [name]: value });
+  };
+  deleteLegalDocuments = () => {
+    this.setState({ legalDocuments: [] });
+    document.getElementById("delete_ld").classList.add("hide");
+    document.getElementById("delete_ld").classList.remove("show");
+  };
+  onChangeLegalDocuments = async (e) => {
+    const legalDocuments = Array.from(e.target.files);
+    await this.setState({ legalDocuments });
+    const deleteBtn = document.getElementById("delete_ld");
+    if (this.state.legalDocuments.length > 0) {
+      deleteBtn.classList.add("show");
+      deleteBtn.classList.remove("hide");
     } else {
-      this.setState({ descError: "" });
+      deleteBtn.classList.remove("show");
+      deleteBtn.classList.add("hide");
     }
   };
-  deleteFiles = () => {
-    this.setState({ files: [] });
-    document.getElementById("delete_btn").classList.add("hide");
-    document.getElementById("delete_btn").classList.remove("show");
+  deleteDesignDocuments = () => {
+    this.setState({ brandingDesignDocuments: [] });
+    document.getElementById("delete_dd").classList.add("hide");
+    document.getElementById("delete_dd").classList.remove("show");
   };
-
-  async onChangeMultiple(e) {
-    var files = e.target.files;
-    var filesArr = await Array.prototype.slice.call(files);
-    let i = 0;
-    while (i < filesArr.length) {
-      if (
-        filesArr[i].type !== "image/jpeg" &&
-        filesArr[i].type !== "image/png" &&
-        filesArr[i].type !== "video/mp4"
-      ) {
-        alert("Type error: Only accepting PNG, JPG/JPEG, and MP4");
-        await filesArr.splice(i, 1);
-      } else {
-        i += 1;
-      }
-    }
-    await this.setState({ files: [...filesArr] });
-    if (this.state.files.length != 0) {
-      document.getElementById("delete_btn").classList.add("show");
-      document.getElementById("delete_btn").classList.remove("hide");
-    }
-  }
-  onChangeTitle = (e) => {
-    this.setState({ title: e.target.value });
-    if (!e.target.value.trim() && this.state.type == 3) {
-      this.setState({ titleError: "Title cannot be blank" });
+  onChangeDesignDocuments = async (e) => {
+    const brandingDesignDocuments = Array.from(e.target.files);
+    await this.setState({ brandingDesignDocuments });
+    const deleteBtn = document.getElementById("delete_dd");
+    if (this.state.brandingDesignDocuments.length > 0) {
+      deleteBtn.classList.add("show");
+      deleteBtn.classList.remove("hide");
     } else {
-      this.setState({ titleError: "" });
+      deleteBtn.classList.remove("show");
+      deleteBtn.classList.add("hide");
     }
   };
-  onChangeSubtitle = (e) => {
-    this.setState({ subtitle: e.target.value });
+  deleteBrandingFiles = () => {
+    this.setState({ brandingFiles: [] });
+    document.getElementById("delete_bf").classList.add("hide");
+    document.getElementById("delete_bf").classList.remove("show");
   };
-
-  onChangeName = (e) => {
-    const name = e.target.value;
-    this.setState({ name: name });
-    if (!name.trim()) {
-      this.setState({ nameError: "Name cannot be blank" });
-    } else if (/\d/.test(name)) {
-      this.setState({ nameError: "Name cannot contain numbers" });
+  onChangeBrandingFiles = async (e) => {
+    const brandingFiles = Array.from(e.target.files);
+    await this.setState({ brandingFiles });
+    const deleteBtn = document.getElementById("delete_bf");
+    if (this.state.brandingFiles.length > 0) {
+      deleteBtn.classList.add("show");
+      deleteBtn.classList.remove("hide");
     } else {
-      this.setState({ nameError: "" });
+      deleteBtn.classList.remove("show");
+      deleteBtn.classList.add("hide");
     }
   };
-  onChangeEnglishName = (e) => {
-    const englishName = e.target.value;
-    this.setState({ englishName });
-  };
-
-  onChangeYear = (e) => {
-    const year = e.target.value;
-    const currentYear = new Date().getFullYear();
-    this.setState({ year });
-    const validYearRegex = /^\d{4}$/; // Only accepts a 4-digit number
-    if (!validYearRegex.test(year) || year > currentYear) {
-      this.setState({ yearError: "Please enter a valid 4-digit year" });
-    } else {
-      this.setState({ yearError: "" });
-    }
-  };
-
-  onChangeTags = (e) => {
-    const lower = e.target.value
-      .replace(/\s/g, "")
-      .split(",")
-      .map((element) => {
-        return element.toLowerCase();
-      });
-    this.setState({ tags: lower });
-  };
-
   submit = () => {
     if (this.state.actionLock) {
       return;
@@ -145,90 +162,17 @@ export default class Create extends Component {
     this.setState({
       actionLock: true,
     });
-    let error = false;
-    if (!this.state.title && this.state.type == 3) {
-      this.setState({ titleError: "Title cannot be blank" });
-      error = true;
-    } else {
-      this.setState({ titleError: "" });
-    }
-    if (!this.state.name.trim()) {
-      this.setState({ nameError: "Name cannot be blank" });
-      error = true;
-    } else if (/\d/.test(this.state.name)) {
-      this.setState({ nameError: "Name cannot contain numbers" });
-      error = true;
-    } else {
-      this.setState({ nameError: "" });
-    }
-    const validYearRegex = /^\d{4}$/; // Only accepts a 4-digit number
-    const currentYear = new Date().getFullYear();
-    if (
-      !validYearRegex.test(this.state.year) ||
-      this.state.year > currentYear
-    ) {
-      this.setState({ yearError: "Please enter a valid 4-digit year" });
-      error = true;
-    } else {
-      this.setState({ yearError: "" });
-    }
-    if (error) {
-      alert("There are errors in the form");
-      this.setState({
-        actionLock: false,
-      });
-      return;
-    }
     let formData = new FormData();
-    for (let i = 0; i < this.state.files.length; i += 1) {
-      formData.append("files", this.state.files[i]);
+    for (let i = 0; i < this.state.brandingFiles.length; i += 1) {
+      formData.append("files", this.state.brandingFiles[i]);
     }
-    if (this.state.files.length == 0) {
-      axios
-        .post(
-          `http://${HOST}:8080/post/add`,
-          {
-            user: getAuthUser(),
-            name: this.state.name,
-            englishName: this.state.englishName,
-            year: this.state.year,
-            title: this.state.title,
-            subtitle: this.state.subtitle,
-            description: this.state.desc,
-            media: [],
-            category: [
-              ...this.state.tags,
-              this.state.type == 1
-                ? "outstanding"
-                : this.state.type == 2
-                ? "regular"
-                : this.state.type == 3
-                ? "research"
-                : "honor",
-            ],
-            layout: 0,
-            created: Date.now,
-            updated: Date.now,
-            status: 0,
-            order: 0,
-          },
-          { headers: { Authorization: `Bearer ${getAuthToken()}` } }
-        )
-        .then(async (res) => {
-          axios.post(`http://${HOST}:8080/log/add`, {
-            username: getAuthUser(),
-            postid: res.data.id,
-            postTitle: this.state.name,
-            action: "Create Post",
-            comments: `User ${getAuthUser()} created post titled ${
-              this.state.name
-            } with the post ID of ${res.data.id}`,
-          });
-          alert(res.data.message);
-          window.location.reload(false);
-        });
-      return;
+    for (let i = 0; i < this.state.brandingDesignDocuments.length; i += 1) {
+      formData.append("files", this.state.brandingDesignDocuments[i]);
     }
+    for (let i = 0; i < this.state.legalDocuments.length; i += 1) {
+      formData.append("files", this.state.legalDocuments[i]);
+    }
+
     axios
       .post(`http://${HOST}:8080/file/upload`, formData, {
         headers: {
@@ -238,80 +182,62 @@ export default class Create extends Component {
       .then((res) => {
         axios
           .post(
-            `http://${HOST}:8080/post/add`,
+            `http://${HOST}:8080/ticket/add`,
             {
-              user: getAuthUser(),
+              username: getAuthUser(),
+              companyName: this.state.companyName,
+              websiteUrl: this.state.companyName,
+              primaryContactName: this.state.primaryContactName,
               name: this.state.name,
-              englishName: this.state.englishName,
-              year: this.state.year,
-              title: this.state.title,
-              subtitle: this.state.subtitle,
-              description: this.state.desc,
-              media: res.data,
-              category: [
-                ...this.state.tags,
-                this.state.type == 1
-                  ? "outstanding"
-                  : this.state.type == 2
-                  ? "regular"
-                  : this.state.type == 3
-                  ? "research"
-                  : "honor",
-              ],
-              layout: 0,
-              created: Date.now,
-              updated: Date.now,
-              status: 0,
-              order: 0,
+              email: this.state.email,
+              socials: [],
+              branding: {
+                files: res.data.slice(0, this.state.brandingFiles.length),
+                colorCodes: this.state.colorCodes,
+                fonts: this.state.fonts,
+                designDocument: res.data.slice(
+                  this.state.brandingFiles.length,
+                  this.state.brandingFiles.length +
+                    this.state.brandingDesignDocuments.length
+                ),
+              },
+              hosting: {
+                proivider: this.state.hostingProvider,
+                username: this.state.hostingUsername,
+                password: this.state.hostingPassword,
+              },
+              FTP: {
+                provider: this.state.ftpProvider,
+                username: this.state.ftpUsername,
+                password: this.state.ftpPassword,
+                liveDirectory: this.state.ftpLiveDirectory,
+              },
+              controlPanel: {
+                url: this.state.controlURL,
+                username: this.state.controlUsername,
+                password: this.state.controlPassword,
+              },
+              domain: {
+                provider: this.state.domainProvider,
+                username: this.state.domainUsername,
+                password: this.state.domainPassword,
+              },
+              budget: this.state.budget,
+              SEOKeywords: this.state.seoKeywords,
+              legalDocuments: res.data.slice(
+                this.state.brandingFiles.length +
+                  this.state.brandingDesignDocuments.length,
+                this.state.brandingFiles.length +
+                  this.state.brandingDesignDocuments.length +
+                  this.state.legalDocuments.length
+              ),
+              comments: this.state.comments,
             },
             { headers: { Authorization: `Bearer ${getAuthToken()}` } }
           )
-          .then(async (res) => {
-            axios.post(`http://${HOST}:8080/log/add`, {
-              username: getAuthUser(),
-              postid: res.data.id,
-              postTitle: this.state.name,
-              action: "Create Post",
-              comments: `User ${getAuthUser()} created post titled ${
-                this.state.name
-              } with the post ID of ${res.data.id}`,
-            });
-            alert(res.data.message);
-            window.location.reload(false);
-          });
+          .then(alert("post added!"));
       })
       .catch((err) => alert(err));
-  };
-  state = {
-    isActive: false,
-  };
-  unlockClick = () => {
-    this.setState({
-      isActive: true,
-    });
-  };
-  unlockHide = () => {
-    this.setState({ isActive: false });
-  };
-  onCheck = (e) => {
-    let newType;
-    if (e.target.checked) {
-      switch (e.target.id) {
-        case "outstanding":
-          newType = 1;
-          break;
-        case "regular":
-          newType = 2;
-          break;
-        case "research":
-          newType = 3;
-          break;
-        case "honor":
-          newType = 4;
-          break;
-      }
-    }
-    this.setState({ type: newType });
   };
   render() {
     return (
@@ -322,179 +248,475 @@ export default class Create extends Component {
             <div className="col mb-5">
               <form className="form-border">
                 <div className="field-set">
-                  <h5>內容分類</h5>
-                  <div>
-                    <input
-                      id="outstanding"
-                      onChange={this.onCheck}
-                      checked={this.state.type == 1}
-                      type="checkbox"
-                    />
-                    <label>&nbsp;&nbsp;傑出校友&nbsp;&nbsp;</label>
-                    <input
-                      id="regular"
-                      onChange={this.onCheck}
-                      checked={this.state.type == 2}
-                      type="checkbox"
-                    />
-                    <label>&nbsp;&nbsp;一般校友&nbsp;&nbsp;</label>
-                    <input
-                      id="research"
-                      onChange={this.onCheck}
-                      checked={this.state.type == 3}
-                      type="checkbox"
-                    />
-                    <label>&nbsp;&nbsp;研究成果&nbsp;&nbsp;</label>
-                    <input
-                      id="honor"
-                      onChange={this.onCheck}
-                      checked={this.state.type == 4}
-                      type="checkbox"
-                    />
-                    <label>&nbsp;&nbsp;名譽博士&nbsp;&nbsp;</label>
+                  <div className="row">
+                    <div className="col-6">
+                      <h5>Company Name</h5>
+                      <input
+                        type="text"
+                        name="companyName"
+                        className={`form-control ${
+                          this.state.nameError && "error"
+                        }`}
+                        placeholder=""
+                        onChange={this.handleChange}
+                      />
+                    </div>
+                    <div className="col-6">
+                      <h5>Primary Contact Name</h5>
+                      <input
+                        type="text"
+                        name="primaryContactName"
+                        className={`form-control ${
+                          this.state.nameError && "error"
+                        }`}
+                        placeholder=""
+                        onChange={this.handleChange}
+                      />
+                    </div>
                   </div>
-                  <div className="spacer-single"></div>
-                  <h5>校友名字</h5>
+                  <div className="row">
+                    <div className="col-6">
+                      <h5>Website URL</h5>
+                      <input
+                        type="text"
+                        name="websiteURL"
+                        className={`form-control ${
+                          this.state.nameError && "error"
+                        }`}
+                        placeholder=""
+                        onChange={this.handleChange}
+                      />
+                    </div>
+                    <div className="col-6">
+                      <h5>Contact Email</h5>
+                      <input
+                        type="text"
+                        name="email"
+                        className={`form-control ${
+                          this.state.nameError && "error"
+                        }`}
+                        placeholder=""
+                        onChange={this.handleChange}
+                      />
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: 20 }} id="dropdown">
+                    <div className="tabupper no-select">
+                      <h5
+                        onClick={() =>
+                          this.toggleDropdown("showBrandingDropdown")
+                        }
+                        className="dropdown-label">
+                        {this.state.showBrandingDropdown
+                          ? "Branding ▲"
+                          : "Branding ▼"}
+                      </h5>
+                    </div>
+                    {this.state.showBrandingDropdown && (
+                      <div className="tab no-select">
+                        <div className="row">
+                          <div className="col">
+                            <h5>Color Codes</h5>
+                            <input
+                              type="text"
+                              name="colorCodes"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col">
+                            <h5>Fonts</h5>
+                            <input
+                              type="text"
+                              name="fonts"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                        </div>
+                        <div className="row">
+                          <div className="col">
+                            <h5>Logos</h5>
+                            <div className="d-create-file">
+                              <p id="file_name">
+                                Upload Your Branding Files Here
+                              </p>
+                              {this.state.brandingFiles.map((x) => (
+                                <p key={x.name}>{x.name}</p>
+                              ))}
+                              <div className="browse">
+                                <input
+                                  type="button"
+                                  className="btn-main"
+                                  id="get_file"
+                                  value="Browse"
+                                />
+                                <input
+                                  id="upload_file"
+                                  type="file"
+                                  multiple
+                                  onChange={this.onChangeBrandingFiles}
+                                />
+                              </div>
+                            </div>
+                            <div
+                              id="delete_bf"
+                              className="btn-main hide mt-2"
+                              style={{ backgroundColor: "#900000" }}
+                              onClick={this.deleteBrandingFiles}>
+                              Delete Files
+                            </div>
+                          </div>
+                          <div className="col">
+                            <h5>Branding Documents</h5>
+                            <div className="d-create-file">
+                              <p id="file_name">Upload Your Designs Here</p>
+                              {this.state.brandingDesignDocuments.map((x) => (
+                                <p key={x.name}>{x.name}</p>
+                              ))}
+                              <div className="browse">
+                                <input
+                                  type="button"
+                                  className="btn-main"
+                                  id="get_file"
+                                  value="Browse"
+                                />
+                                <input
+                                  id="upload_file"
+                                  type="file"
+                                  multiple
+                                  onChange={this.onChangeDesignDocuments}
+                                />
+                              </div>
+                            </div>
+                            <div
+                              id="delete_dd"
+                              className="btn-main hide mt-2"
+                              style={{ backgroundColor: "#900000" }}
+                              onClick={this.deleteDesignDocuments}>
+                              Delete Files
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ marginBottom: 20 }} id="dropdown">
+                    <div className="tabupper no-select">
+                      <h5
+                        onClick={() =>
+                          this.toggleDropdown("showHostingDropdown")
+                        }
+                        className="dropdown-label">
+                        {this.state.showHostingDropdown
+                          ? "Hosting ▲"
+                          : "Hosting ▼"}
+                      </h5>
+                    </div>
+                    {this.state.showHostingDropdown && (
+                      <div className="row tab no-select">
+                        <div className="row">
+                          <div className="col">
+                            <h5>Provider</h5>
+                            <input
+                              type="text"
+                              name="hostingProvider"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col">
+                            <h5>Username</h5>
+                            <input
+                              type="text"
+                              name="hostingUsername"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col">
+                            <h5>Password</h5>
+                            <input
+                              type="text"
+                              name="hostingPassword"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ marginBottom: 20 }} id="dropdown">
+                    <div className="tabupper no-select">
+                      <h5
+                        onClick={() => this.toggleDropdown("showFTPDropdown")}
+                        className="dropdown-label">
+                        {this.state.showFTPDropdown ? "FTP ▲" : "FTP ▼"}
+                      </h5>
+                    </div>
+                    {this.state.showFTPDropdown && (
+                      <div className="row tab no-select">
+                        <div className="row">
+                          <div className="col">
+                            <h5>Provider</h5>
+                            <input
+                              type="text"
+                              name="ftpProvider"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col">
+                            <h5>Username</h5>
+                            <input
+                              type="text"
+                              name="ftpUsername"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                        </div>
+                        <div className="row">
+                          <div className="col">
+                            <h5>Password</h5>
+                            <input
+                              type="text"
+                              name="ftpPassword"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col">
+                            <h5>Live Directory Path</h5>
+                            <input
+                              type="text"
+                              name="ftpLiveDirectory"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ marginBottom: 20 }} id="dropdown">
+                    <div className="tabupper no-select">
+                      <h5
+                        onClick={() =>
+                          this.toggleDropdown("showControlDropdown")
+                        }
+                        className="dropdown-label">
+                        {this.state.showControlDropdown
+                          ? "Admin Control Panel ▲"
+                          : "Admin Control Panel ▼"}
+                      </h5>
+                    </div>
+                    {this.state.showControlDropdown && (
+                      <div className="row tab no-select">
+                        <div className="row">
+                          <div className="col">
+                            <h5>URL</h5>
+                            <input
+                              type="text"
+                              name="controlURL"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col">
+                            <h5>Username</h5>
+                            <input
+                              type="text"
+                              name="controlUsername"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col">
+                            <h5>Password</h5>
+                            <input
+                              type="text"
+                              name="controlPassword"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ marginBottom: 20 }} id="dropdown">
+                    <div className="tabupper no-select">
+                      <h5
+                        onClick={() =>
+                          this.toggleDropdown("showDomainDropdown")
+                        }
+                        className="dropdown-label">
+                        {this.state.showDomainDropdown
+                          ? "Domain ▲"
+                          : "Domain ▼"}
+                      </h5>
+                    </div>
+                    {this.state.showDomainDropdown && (
+                      <div className="row tab no-select">
+                        <div className="row">
+                          <div className="col">
+                            <h5>Provider</h5>
+                            <input
+                              type="text"
+                              name="domainProvider"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col">
+                            <h5>Username</h5>
+                            <input
+                              type="text"
+                              name="domainUsername"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col">
+                            <h5>Password</h5>
+                            <input
+                              type="text"
+                              name="domainPassword"
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="row">
+                    <div className="col">
+                      <h5>Budget ($USD)</h5>
+                      <input
+                        type="text"
+                        name="budget"
+                        className={`form-control ${
+                          this.state.nameError && "error"
+                        }`}
+                        placeholder=""
+                        onChange={this.handleChange}
+                      />
+                      <h5>Project Deadline</h5>
+                      <input
+                        type="text"
+                        name="deadline"
+                        className={`form-control ${
+                          this.state.nameError && "error"
+                        }`}
+                        placeholder=""
+                        onChange={this.handleChange}
+                      />
+                    </div>
+                    <div className="col">
+                      <h5>Legal Documents</h5>
+                      <div className="d-create-file">
+                        <p id="file_name">Upload Your Legal Documents Here</p>
+                        {this.state.legalDocuments.map((x) => (
+                          <p key={x.name}>{x.name}</p>
+                        ))}
+                        <div className="browse">
+                          <input
+                            type="button"
+                            className="btn-main"
+                            id="get_file"
+                            value="Browse"
+                          />
+                          <input
+                            id="upload_file"
+                            type="file"
+                            multiple
+                            onChange={this.onChangeLegalDocuments}
+                          />
+                        </div>
+                      </div>
+                      <div
+                        id="delete_ld"
+                        className="btn-main hide mt-2"
+                        style={{ backgroundColor: "#900000" }}
+                        onClick={this.deleteLegalDocuments}>
+                        Delete Files
+                      </div>
+                    </div>
+                  </div>
+                  <h5>Seo Keywords</h5>
                   <input
                     type="text"
-                    name="item_title"
-                    id="item_title"
+                    name="seoKeywords"
                     className={`form-control ${
                       this.state.nameError && "error"
                     }`}
                     placeholder=""
-                    onChange={this.onChangeName}
+                    onChange={this.handleChange}
                   />
-                  {this.state.nameError && (
-                    <p className="error-message">{this.state.nameError}</p>
-                  )}
-                  <h5>校友英文名</h5>
+                  <h5>Additional Comments</h5>
                   <input
                     type="text"
-                    name="item_title"
-                    id="item_title"
-                    className="form-control"
-                    placeholder=""
-                    onChange={this.onChangeEnglishName}
-                  />
-                  <h5>標題</h5>
-                  <input
-                    type="text"
-                    name="item_title"
-                    id="item_title"
+                    name="comments"
                     className={`form-control ${
-                      this.state.titleError && "error"
+                      this.state.nameError && "error"
                     }`}
                     placeholder=""
-                    onChange={this.onChangeTitle}
+                    onChange={this.handleChange}
                   />
-                  {this.state.titleError && (
-                    <p className="error-message">{this.state.titleError}</p>
-                  )}
-                  <h5>副標題</h5>
-                  <input
-                    type="text"
-                    name="item_title"
-                    id="item_title"
-                    className="form-control"
-                    placeholder=""
-                    onChange={this.onChangeSubtitle}
-                  />
-                  <h5>詳細描述</h5>
-                  <div className="editor-container">
-                    <Editor
-                      name="item_desc"
-                      id="item_desc"
-                      className={`form-control ${
-                        this.state.descError && "error"
-                      }`}
-                      init={{
-                        height: 500,
-                        selector: "#editor",
-                        menubar: true,
-                        plugins:
-                          "powerpaste casechange searchreplace autolink directionality visualblocks visualchars image link media mediaembed codesample table charmap pagebreak nonbreaking anchor tableofcontents insertdatetime advlist lists checklist wordcount editimage help formatpainter permanentpen charmap linkchecker emoticons advtable export autosave advcode fullscreen",
-                        toolbar:
-                          "undo redo print spellcheckdialog formatpainter | blocks fontfamily fontsize | bold italic underline forecolor backcolor | link image | alignleft aligncenter alignright alignjustify | code",
-                        extended_valid_elements: "iframe[*]",
-                        advcode_inline: true,
-                      }}
-                      onEditorChange={this.handleEditorChange}
-                    />
-                  </div>
-                  <div className="spacer-10"></div>
-                  <h5>標籤</h5>
-                  <input
-                    type="text"
-                    name="item_title"
-                    id="item_title"
-                    className="form-control"
-                    placeholder=""
-                    onChange={this.onChangeTags}
-                  />
-                  <h5>
-                    {this.state.type == 1
-                      ? "獲獎年份"
-                      : this.state.type == 2
-                      ? "入學年份"
-                      : this.state.type == 3
-                      ? "發表年份"
-                      : "獲獎年份"}
-                  </h5>
-                  <input
-                    type="number"
-                    name="item_title"
-                    id="item_title"
-                    className={`form-control ${
-                      this.state.yearError && "error"
-                    }`}
-                    placeholder=""
-                    onChange={this.onChangeYear}
-                  />
-                  {this.state.yearError && (
-                    <p className="error-message">{this.state.yearError}</p>
-                  )}
-                  <div className="spacer-single"></div>
-                  <div>
-                    <h5>檔案</h5>
-                    <div className="d-create-file">
-                      <p id="file_name">PNG, JPG/JPEG or MP4. Max 200mb.</p>
-                      {this.state.files.map((x) => (
-                        <p key={x.name}>{x.name}</p>
-                      ))}
-                      <div className="browse">
-                        <input
-                          type="button"
-                          className="btn-main"
-                          id="get_file"
-                          value="Browse"
-                        />
-
-                        <input
-                          id="upload_file"
-                          type="file"
-                          multiple
-                          onChange={this.onChangeMultiple}
-                          accept=".mp4,.png,.jpg,.jpeg"
-                        />
-                      </div>
-                    </div>
-                    <div
-                      id="delete_btn"
-                      className="btn-main hide mt-2"
-                      style={{ backgroundColor: "#900000" }}
-                      onClick={this.deleteFiles}>
-                      Delete Files
-                    </div>
-                    <div className="spacer-10"></div>
-                  </div>
-                  <div className="spacer-5"></div>
                   <input
                     type="button"
                     id="submit"
                     onClick={this.submit}
                     className="btn-main"
-                    value="Create Post"
+                    value="Create Ticket"
                   />
                 </div>
               </form>

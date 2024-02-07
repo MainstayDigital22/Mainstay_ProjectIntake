@@ -67,7 +67,7 @@ class Header extends Component {
                     onClick={() => window.open(`/create`, "_self")}>
                     Create
                   </div>
-                  {getAuthLevel() == 0 ? (
+                  {getAuthLevel() == "admin" ? (
                     <div
                       className="dropdown-custom  btn"
                       onClick={() => window.open(`/users`, "_self")}>

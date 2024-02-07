@@ -1,68 +1,80 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
 import { HOST } from "../const";
 import building from "../assets/building.jpg";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useLocation } from "react-router-dom";
-const Login = () => {
+const SignUp = () => {
   const [username, setUsername] = useState("");
+  const [fullname, setFullname] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [errmsg, setErr] = useState("");
-  const location = useLocation();
-  const signupSuccess = location.state?.signupSuccess;
-  function login(username, password) {
+  const navigate = useNavigate();
+  async function signUp() {
+    if (password !== confirmPassword) {
+      setErr("Passwords do not match");
+      return;
+    }
     axios
-      .post(`http://${HOST}:8080/user/login`, {
-        username: username,
-        password: password,
+      .post(`http://${HOST}:8080/user/signup`, {
+        username,
+        name: fullname,
+        password,
+        email,
+        phone,
       })
-      .then(async (res) => {
+      .then((res) => {
         console.log(res);
-        if (res.status == 200) {
-          const user = await JSON.stringify(res.data);
-          await localStorage.setItem("user", user);
-          const json = await JSON.parse(localStorage.getItem("user"));
-          console.log(json);
-          window.location.href = "/";
+        if (res.status === 200) {
+          navigate("/login", { state: { signupSuccess: true } });
         }
       })
-      .catch(async (err) => {
-        setErr(err.response.data);
+      .catch((error) => {
+        // Handle non-200 status and other errors
+        const errMsg = error.response
+          ? error.response.data
+          : "An error occurred during sign up.";
+        setErr(errMsg);
       });
   }
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(username, password);
+    await signUp();
   };
-
   return (
     <div className="container-p">
       <div className="row limit">
         <div className="col-6 split">
-          <img src={building} style={{ height: "100%" }} />
+          <img src={building} style={{ height: "100%" }} alt="Building" />
         </div>
-        <GlobalStyles />
         <div className="col-6 split">
-          <form className="login" onSubmit={handleSubmit}>
+          <form className="signup" onSubmit={handleSubmit}>
+            <GlobalStyles />
             <div style={{ justifyContent: "center", textAlign: "center" }}>
-              {signupSuccess && (
-                <div className="successMessage">
-                  Signup successful! Please log in.
-                </div>
-              )}
-              <h3>Log In</h3>
+              <h3>Sign Up</h3>
               <p style={{ fontSize: 11, marginTop: -6, color: "#999999" }}>
-                Enter your credentials to get started
+                Fill in the details to create your account
               </p>
             </div>
 
             <label>Username:</label>
             <input
-              type="username"
+              type="text"
               onChange={(e) => setUsername(e.target.value)}
               value={username}
             />
+
+            <label>Full Name:</label>
+            <input
+              type="text"
+              onChange={(e) => setFullname(e.target.value)}
+              value={fullname}
+            />
+
             <label>Password:</label>
             <input
               type="password"
@@ -70,8 +82,30 @@ const Login = () => {
               value={password}
             />
 
-            <button>Log in</button>
-            {errmsg ? <label style={{ color: "red" }}>{errmsg}</label> : <></>}
+            <label>Confirm Password:</label>
+            <input
+              type="password"
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              value={confirmPassword}
+            />
+
+            <label>Email:</label>
+            <input
+              type="email"
+              onChange={(e) => setEmail(e.target.value)}
+              value={email}
+            />
+
+            <label>Phone:</label>
+            <input
+              type="tel"
+              onChange={(e) => setPhone(e.target.value)}
+              value={phone}
+            />
+
+            <button type="submit">Sign Up</button>
+            {errmsg && <label style={{ color: "red" }}>{errmsg}</label>}
+
             <span
               style={{
                 display: "flex",
@@ -80,11 +114,11 @@ const Login = () => {
                 fontSize: 15,
               }}>
               <p style={{ display: "inline-block" }}>
-                Need an account?&nbsp;&nbsp;
+                Already have an account?&nbsp;&nbsp;
               </p>
-              <a href="/signup">
+              <a href="/login">
                 <p style={{ display: "inline-block", color: "#0b59ef" }}>
-                  Sign Up
+                  Log In
                 </p>
               </a>
             </span>
@@ -95,7 +129,7 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUp;
 
 const GlobalStyles = createGlobalStyle`
 /* google font */
@@ -122,16 +156,6 @@ header {
 header a {
   color: #333;
   text-decoration: none;
-}
-.successMessage {
-  color: #77cc77;
-  padding: 10px;
-  border-radius: 5px;
-  text-align: center;
-  font-size: 15px;
-  margin: auto;
-  margin-bottom:10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 .split{
   height:100%;

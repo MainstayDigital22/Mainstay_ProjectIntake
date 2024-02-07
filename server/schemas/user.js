@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -9,9 +9,14 @@ const userSchema = new Schema({
   phone: String,
   created: { type: Date, default: Date.now, required: true },
   updated: { type: Date, default: Date.now, required: true },
-  permission: { type: Number, required: true }, //0: admin, 1: staff, 2: user (more roles can be added in the future) 
+  permission: {
+    type: String,
+    required: true,
+    enum: ["admin", "staff", "user"],
+    default: "user",
+  },
 });
 
-const User = mongoose.model('Users', userSchema);
+const User = mongoose.model("Users", userSchema);
 
 module.exports = User;

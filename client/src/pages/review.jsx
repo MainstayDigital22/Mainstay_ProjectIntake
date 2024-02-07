@@ -102,7 +102,7 @@ class Review extends Component {
     //console.log(getAuthUser())
     await axios
       .post(
-        `http://${HOST}:8080/post`,
+        `http://${HOST}:8080/ticket`,
         { user: getAuthUser() },
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
@@ -290,107 +290,71 @@ class Review extends Component {
               <div className="col-md-9">
                 <div className="row">
                   {this.state.posts.length != 0 ? (
-                    this.state.posts.map((post, index) =>
-                      ((this.state.statusFilter.length == 0 &&
-                        post.status != 3) ||
-                        this.state.statusFilter.includes(post.status)) &&
-                      (this.state.tagFilter.length == 0 ||
-                        this.intersec(this.state.tagFilter, post.category)) ? (
-                        <div
-                          key={index}
-                          className="d-item col-lg-4 col-md-6 col-sm-6 col-xs-12 mb-4">
-                          <div className="nft__item m-0">
-                            <div
-                              className="nft__item_wrap p-4"
-                              style={{ height: `${this.state.height}px` }}>
+                    this.state.posts.map((post, index) => (
+                      <div
+                        key={index}
+                        className="d-item col-lg-4 col-md-6 col-sm-6 col-xs-12 mb-4">
+                        <div className="nft__item m-0">
+                          <div
+                            className="nft__item_wrap p-4"
+                            style={{ height: `${this.state.height}px` }}>
+                            <a
+                              onClick={() =>
+                                window.open(`/review/${post._id}`, "_self")
+                              }
+                              style={{ cursor: "pointer" }}></a>
+                          </div>
+                          <div className="mt-2"></div>
+                          <div className="nft__item_info mb-1">
+                            <span
+                              onClick={() =>
+                                window.open(`/review/${post._id}`, "_self")
+                              }>
+                              <h4>{post.title}</h4>
+                            </span>
+                            <div className="nft__item_price">
                               <a
                                 onClick={() =>
                                   window.open(`/review/${post._id}`, "_self")
-                                }
-                                style={{ cursor: "pointer" }}>
-                                {post.media[0] ? (
-                                  post.media[0].extension == "mp4" ? (
-                                    <ReactPlayer
-                                      width="300"
-                                      url={post.media[0].link}
-                                    />
-                                  ) : (
-                                    <img
-                                      onLoad={this.onImgLoad}
-                                      src={post.media[0].link}
-                                      className="lazy nft__item_preview"
-                                      alt=""
-                                    />
-                                  )
-                                ) : (
-                                  <></>
-                                )}
+                                }>
+                                {post.name}{" "}
+                                {`${
+                                  post.englishName
+                                    ? "(" + post.englishName + ")"
+                                    : ""
+                                }`}
+                                - {post.year}
                               </a>
                             </div>
-                            <div className="mt-2"></div>
-                            <div className="nft__item_info mb-1">
-                              <span
-                                onClick={() =>
-                                  window.open(`/review/${post._id}`, "_self")
-                                }>
-                                <h4>{post.title}</h4>
-                              </span>
-                              <div className="nft__item_price">
-                                <a
-                                  onClick={() =>
-                                    window.open(`/review/${post._id}`, "_self")
-                                  }>
-                                  {post.name}{" "}
-                                  {`${
-                                    post.englishName
-                                      ? "(" + post.englishName + ")"
-                                      : ""
-                                  }`}
-                                  - {post.year}
-                                </a>
-                              </div>
-                              <div className="item-info ">
-                                <div className="item_info_counts row ml-2">
-                                  {post.category.map((tag) => (
-                                    <div
-                                      className="item_info_type col-auto m-2 rounded"
-                                      onClick={() => {
-                                        this.onClickTag(tag);
-                                      }}
-                                      style={{ backgroundColor: "#d4efff" }}>
-                                      {tag}
-                                    </div>
-                                  ))}
-                                  <div
-                                    className="item_info_type col-auto m-2 rounded"
-                                    style={{
-                                      backgroundColor: `${
-                                        post.status == 0
-                                          ? "#fffcd4"
-                                          : post.status == 1
-                                          ? "#ddffd4"
-                                          : post.status == 2
-                                          ? "#ffd4f6"
-                                          : "#d4d4ff"
-                                      }`,
-                                    }}>
-                                    {post.status == 0
-                                      ? "Pending"
-                                      : post.status == 1
-                                      ? "Approved"
-                                      : post.status == 2
-                                      ? "Rejected"
-                                      : "Archived"}
-                                  </div>
-                                </div>{" "}
-                              </div>
+                            <div className="item-info ">
+                              <div className="item_info_counts row ml-2">
+                                <div
+                                  className="item_info_type col-auto m-2 rounded"
+                                  style={{
+                                    backgroundColor: `${
+                                      post.status == 0
+                                        ? "#fffcd4"
+                                        : post.status == 1
+                                        ? "#ddffd4"
+                                        : post.status == 2
+                                        ? "#ffd4f6"
+                                        : "#d4d4ff"
+                                    }`,
+                                  }}>
+                                  {post.status == 0
+                                    ? "Pending"
+                                    : post.status == 1
+                                    ? "Approved"
+                                    : post.status == 2
+                                    ? "Rejected"
+                                    : "Archived"}
+                                </div>
+                              </div>{" "}
                             </div>
                           </div>
                         </div>
-                      ) : (
-                        <></>
-                      )
-                    )
+                      </div>
+                    ))
                   ) : (
                     <p>No Results</p>
                   )}

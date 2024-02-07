@@ -8,7 +8,7 @@ User Object
   phone: String,
   created: { type: Date, default: Date.now, required: true },
   updated: { type: Date, default: Date.now, required: true },
-  permission: { type: Number, required: true }, //0: admin, 1: staff, 2: user (more roles can be added in the future) 
+  permission: { type: Number, required: true }, //0: admin, 1: staff, 2: user (more roles can be added in the future)
 }
 
 WebsiteForm Object
@@ -36,24 +36,24 @@ WebsiteForm Object
     },
     hosting: {
         type:{
-            proivider: { type: String, required: true }, 
-            username: { type: String, required: true }, 
-            password: { type: String, required: true }, 
+            proivider: { type: String, required: true },
+            username: { type: String, required: true },
+            password: { type: String, required: true },
         },
         required: false
     },
     FTP: {
         type:{
-            host: { type: String, required: true }, 
-            username: { type: String, required: true }, 
-            password: { type: String, required: true }, 
+            host: { type: String, required: true },
+            username: { type: String, required: true },
+            password: { type: String, required: true },
             liveDirectory: { type: String, required: true }
         },
         required: false
     },
     controlPanel: {
         type: {
-            url: { type: String, required: true }, 
+            url: { type: String, required: true },
             username: { type: String, required: true },
             password: { type: String, required: true }
         },
@@ -61,13 +61,13 @@ WebsiteForm Object
     },
     domain: {
         type: {
-            provider: { type: String, required: true }, 
+            provider: { type: String, required: true },
             username: { type: String, required: true },
             password: { type: String, required: true }
         },
         required: false
     },
-    budget: { type: Number, required: true }, 
+    budget: { type: Number, required: true },
     SEOKeywords: [String],
     legalDocuments: [String], //urls
     comments: String //anything additional
@@ -84,7 +84,7 @@ BotConfigForm Object
         urls: [String]
         pinecone: { //or are we making the pinecone DB for them?
             type: {
-                url: { type: String, required: true }, 
+                url: { type: String, required: true },
                 APIKey: { type: String, required: true },
             },
             required: false

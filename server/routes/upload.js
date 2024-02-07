@@ -3,8 +3,8 @@ const mongoose = require("mongoose");
 const { GridFSBucket } = require("mongodb");
 const { GridFsStorage } = require("multer-gridfs-storage");
 const PORT = process.env.PORT || 8080;
-const HOST = process.env.HOST || "localhost"
-const MONGODB_URI = process.env.MONGODB_URI
+const HOST = process.env.HOST || "localhost";
+const MONGODB_URI = process.env.MONGODB_URI;
 const connection = mongoose.createConnection(MONGODB_URI);
 
 let gfs;
@@ -19,14 +19,8 @@ const storage = new GridFsStorage({
   url: MONGODB_URI,
   options: { useNewUrlParser: true, useUnifiedTopology: true },
   file: (req, file) => {
-    const match = ["image/png", "image/jpeg", "video/mp4"];
-
-    if (match.indexOf(file.mimetype) === -1) {
-      throw new Error("file type error");
-    }
-
     return {
-      bucketName: "photos",
+      bucketName: "files",
       filename: `${Date.now()}-${file.originalname}`,
     };
   },
@@ -48,16 +42,12 @@ router.post("/upload", async (req, res) => {
 
   try {
     await multerUpload(req, res); // Wait for files to be uploaded
-    if (req.files.length === 0) return res.send("You must select at least one file.");
+    if (req.files.length === 0)
+      return res.send("You must select at least one file.");
 
     const urls = req.files.map((file, index) => {
-      return {
-        link: `http://${HOST}:${PORT}/file/${file.filename}`,
-        extension: file.filename.split(".").pop(),
-        order: index,
-      };
+      return `http://${HOST}:${PORT}/file/${file.filename}`;
     });
-
     return res.send(urls);
   } catch (err) {
     console.error(err);
@@ -84,8 +74,11 @@ router.delete("/file/:filename", async (req, res) => {
 
 exports.deleteFile = async function (filename) {
   try {
-    console.log(filename)
-    const files = await gfs.find({ filename }).toArray().catch(error => console.error(error));
+    console.log(filename);
+    const files = await gfs
+      .find({ filename })
+      .toArray()
+      .catch((error) => console.error(error));
 
     if (files.length === 0) {
       throw new Error("File not found.");
