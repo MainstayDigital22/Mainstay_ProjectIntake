@@ -1,6 +1,6 @@
+import axios from "axios";
 import React, { Component } from "react";
 import { createGlobalStyle } from "styled-components";
-import axios from "axios";
 import { getAuthToken, getAuthUser } from "../components/auth";
 import { HOST } from "../const";
 const GlobalStyles = createGlobalStyle`
@@ -56,7 +56,7 @@ h5{
   }
 `;
 
-export default class Create extends Component {
+export default class Ticket extends Component {
   constructor() {
     super();
     this.state = {
@@ -88,8 +88,6 @@ export default class Create extends Component {
       domainProvider: "",
       domainUsername: "",
       domainPassword: "",
-      budget: "",
-      deadline: "",
       seoKeywords: "",
       comments: "",
       actionLock: false,
@@ -222,7 +220,6 @@ export default class Create extends Component {
                 username: this.state.domainUsername,
                 password: this.state.domainPassword,
               },
-              budget: this.state.budget,
               SEOKeywords: this.state.seoKeywords,
               legalDocuments: res.data.slice(
                 this.state.brandingFiles.length +
@@ -638,28 +635,7 @@ export default class Create extends Component {
                     )}
                   </div>
                   <div className="row">
-                    <div className="col">
-                      <h5>Budget ($USD)</h5>
-                      <input
-                        type="text"
-                        name="budget"
-                        className={`form-control ${
-                          this.state.nameError && "error"
-                        }`}
-                        placeholder=""
-                        onChange={this.handleChange}
-                      />
-                      <h5>Project Deadline</h5>
-                      <input
-                        type="text"
-                        name="deadline"
-                        className={`form-control ${
-                          this.state.nameError && "error"
-                        }`}
-                        placeholder=""
-                        onChange={this.handleChange}
-                      />
-                    </div>
+            
                     <div className="col">
                       <h5>Legal Documents</h5>
                       <div className="d-create-file">

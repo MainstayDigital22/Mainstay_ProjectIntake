@@ -1,17 +1,18 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import React from "react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./App.css";
-import { Protected, Header } from "./components";
+import { Header, Protected } from "./components";
 import {
-  Review,
-  Login,
-  Create,
-  Page403,
-  Home,
   Details,
-  Users,
+  Home,
+  Login,
+  OnBoard,
+  Page403,
+  Review,
   SignUp,
+  Ticket,
+  Users,
 } from "./pages";
 
 const App = () => {
@@ -38,11 +39,20 @@ const App = () => {
           }
         />
         <Route
-          path="/create"
+          path="/new-ticket"
           element={
-            <Protected perms={["admin", "staff", "user"]}>
+            <Protected perms={["admin", "staff", "client"]}>
               <Header />
-              <Create />
+              <Ticket />
+            </Protected>
+          }
+        />
+        <Route
+          path="/onboard"
+          element={
+            <Protected perms={["admin", "staff", "client"]}>
+              <Header />
+              <OnBoard />
             </Protected>
           }
         />
@@ -58,7 +68,7 @@ const App = () => {
         <Route
           path="/"
           element={
-            <Protected perms={["admin", "staff", "user"]}>
+            <Protected perms={["admin", "staff", "client"]}>
               <Header />
               <Home />
             </Protected>

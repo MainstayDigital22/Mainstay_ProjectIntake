@@ -3,12 +3,6 @@ const Schema = mongoose.Schema;
 
 const ticketSchema = new Schema({
   username: { type: String, required: true }, //username for accessing our portal
-  companyName: { type: String, required: true },
-  websiteUrl: { type: String, required: true },
-  primaryContactName: { type: String, required: true },
-  name: { type: String },
-  email: { type: String, required: true },
-  socials: [String],
   branding: {
     files: [String], //array of media urls
     colorCodes: {
@@ -50,9 +44,7 @@ const ticketSchema = new Schema({
     },
     required: false,
   },
-  budget: { type: Number, required: true },
   SEOKeywords: String,
-  legalDocuments: [String], //urls
   comments: String, //anything additional
 });
 

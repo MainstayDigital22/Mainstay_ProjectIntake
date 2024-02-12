@@ -36,7 +36,6 @@ router.route("/add").post(async (req, res) => {
     FTP: req.body.FTP,
     controlPanel: req.body.controlPanel,
     domain: req.body.domain,
-    budget: req.body.budget,
     SEOKeywords: req.body.SEOKeywords,
     legalDocuments: req.body.legalDocuments,
     comments: req.body.comments,

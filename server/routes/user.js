@@ -5,7 +5,7 @@ let User = require("../schemas/user");
 const { auth } = require("./auth");
 
 const createToken = (username, perm) => {
-  return jwt.sign({ username, perm }, process.env.SECRET, { expiresIn: "30m" });
+  return jwt.sign({ username, perm }, process.env.SECRET, { expiresIn: "3h" });
 };
 
 router.route("/").get(async function (req, res) {
@@ -18,7 +18,7 @@ router.route("/").get(async function (req, res) {
     .catch((err) => res.status(400).json("Error: " + err));
 });
 router.route("/add").post(async function (req, res) {
-  if ((await auth(req, 0)) !== 1) {
+  if ((await auth(req, ['admin'])) !== 1) {
     res.status(403).json("Auth Error");
     return;
   }
@@ -77,7 +77,7 @@ router.route("/:username").delete((req, res) => {
 });
 
 router.route("/update/:username").post(async (req, res) => {
-  if ((await auth(req, 0)) !== 1) {
+  if ((await auth(req, ['admin'])) !== 1) {
     res.status(403).json("Auth Error");
     return;
   }
@@ -110,7 +110,40 @@ router.route("/update/:username").post(async (req, res) => {
         .catch((err) => res.status(400).json("Error: " + err));
     })
     .catch((err) => res.status(400).json(err));
+});+
+
+router.route("/onboard").post(async (req, res) => {
+  const exists = await User.findOne({ username: req.body.username });
+  if (!exists) {
+    res.status(400).json("User not found");
+    return;
+  }
+  console.log(req.body.companyName)
+      User.findOneAndUpdate(
+        { username: req.body.username },
+        Object.entries({
+          companyName: req.body.companyName,
+  companyWebsite: req.body.companyWebsite,
+  contactEmail: req.body.contactEmail,
+  socials: req.body.socials,
+  contactName: req.body.contactName,
+  legalDocuments: req.body.legalDocuments,
+  comments:req.body.comments,
+  onboard:true,
+          updated: Date.now(),
+        }).reduce((acc, [key, value]) => {
+          if (value !== undefined) {
+            acc[key] = value;
+          }
+          return acc;
+        }, {}),
+        {new:true}
+      )
+        .then(() => res.json("User updated!"))
+        .catch((err) => res.status(400).json("Error: " + err));
 });
+
+
 router.route("/login").post(async function (req, res) {
   const user = await User.findOne({ username: req.body.username });
   if (!user) {

@@ -1,10 +1,10 @@
-import { useState } from "react";
 import axios from "axios";
-import { createGlobalStyle } from "styled-components";
-import { HOST } from "../const";
-import building from "../assets/building.jpg";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
+import { createGlobalStyle } from "styled-components";
+import building from "../assets/building.jpg";
+import { HOST } from "../const";
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +24,15 @@ const Login = () => {
           await localStorage.setItem("user", user);
           const json = await JSON.parse(localStorage.getItem("user"));
           console.log(json);
-          window.location.href = "/";
+          axios.get(`http://${HOST}:8080/user/${res.data.user}`).then((res2)=>{
+            if(res2.data[0].onboard){
+              window.location.href = "/";
+            }else{
+              window.location.href = "/onboard";
+            }
+            
+          })
+          
         }
       })
       .catch(async (err) => {

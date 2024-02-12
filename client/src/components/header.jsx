@@ -1,9 +1,8 @@
-import React, { Component } from "react";
-import { getAuthLevel } from "../components/auth";
-import jwt_decode from "jwt-decode";
 import axios from "axios";
+import jwt_decode from "jwt-decode";
+import React, { Component } from "react";
+import { getAuthLevel, getAuthToken, getAuthUser } from "../components/auth";
 import { HOST } from "../const";
-import { getAuthUser, getAuthToken } from "../components/auth";
 
 class Header extends Component {
   logout = () => {
@@ -33,7 +32,10 @@ class Header extends Component {
                 username: getAuthUser(),
               },
               { headers: { Authorization: `Bearer ${getAuthToken()}` } }
-            );
+            ).then(async ()=>{
+              const user = await JSON.stringify(res.data);
+          await localStorage.setItem("user", user);
+            });
           } else {
             this.logout();
           }
@@ -64,8 +66,13 @@ class Header extends Component {
                   </div>
                   <div
                     className="dropdown-custom  btn"
-                    onClick={() => window.open(`/create`, "_self")}>
-                    Create
+                    onClick={() => window.open(`/onboard`, "_self")}>
+                    Onboard
+                  </div>
+                  <div
+                    className="dropdown-custom  btn"
+                    onClick={() => window.open(`/new-ticket`, "_self")}>
+                    New Ticket
                   </div>
                   {getAuthLevel() == "admin" ? (
                     <div
