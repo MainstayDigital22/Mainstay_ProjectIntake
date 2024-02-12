@@ -1,11 +1,11 @@
-import React, { Component, useState } from 'react';
-import { MaterialReactTable } from "material-react-table";
-import { createGlobalStyle } from 'styled-components';
-import { getAuthToken,getAuthUser} from "../components/auth";
-import {Box,Button,Dialog,DialogActions,DialogContent,DialogTitle,IconButton,MenuItem,Stack,TextField,Tooltip,FormControl,InputLabel,Select} from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
-import {HOST} from '../const'
-import axios from "axios"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Tooltip } from '@mui/material';
+import axios from "axios";
+import { MaterialReactTable } from "material-react-table";
+import React, { Component, useState } from 'react';
+import { createGlobalStyle } from 'styled-components';
+import { getAuthToken, getAuthUser } from "../components/auth";
+import { HOST } from '../const';
 const GlobalStyles = createGlobalStyle`
   header#myHeader.navbar.sticky.white {
     background: #403f83;
@@ -93,10 +93,9 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
                       setValues({ ...values, permission: e.target.value })
                     }
                   >
-                    <MenuItem value={0}>Admin</MenuItem>
-                    <MenuItem value={1}>Reviewer</MenuItem>
-                    <MenuItem value={2}>Poster</MenuItem>
-                    <MenuItem value={3}>Viewer</MenuItem>
+                    <MenuItem value={'admin'}>Admin</MenuItem>
+                    <MenuItem value={'staff'}>Staff</MenuItem>
+                    <MenuItem value={'user'}>User</MenuItem>
                   </Select>
                 </FormControl>
               )
@@ -257,13 +256,7 @@ class Users extends Component {
       muiTableHeadCellProps: { sx: { color: 'black' } },
       Cell: ({ renderedCellValue }) => (
         <strong>
-          {renderedCellValue === 0
-            ? 'Admin'
-            : renderedCellValue === 1
-            ? 'Reviewer'
-            : renderedCellValue === 2
-            ? 'Poster'
-            : 'Viewer'}
+          {renderedCellValue}
         </strong>
       ),
     },
