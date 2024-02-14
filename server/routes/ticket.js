@@ -9,7 +9,7 @@ router.route("/").post(async (req, res) => {
     return;
   }
   if ((await auth(req, ["admin", "staff"])) !== 1) {
-    Ticket.find({ user: req.body.user })
+    Ticket.find({ username: req.body.user })
       .then((posts) => res.json(posts))
       .catch((err) => res.status(400).json("Error: " + err));
     return;
@@ -25,19 +25,16 @@ router.route("/add").post(async (req, res) => {
   }
   const newTicket = new Ticket({
     username: req.body.username,
-    companyName: req.body.companyName,
-    websiteUrl: req.body.websiteUrl,
-    primaryContactName: req.body.primaryContactName,
-    name: req.body.name,
-    email: req.body.email,
-    socials: req.body.socials,
+    category: req.body.category,
+    title: req.body.title,
+    priority: req.body.priority,
+    domainURL: req.body.domainURL,
     branding: req.body.branding,
     hosting: req.body.hosting,
     FTP: req.body.FTP,
     controlPanel: req.body.controlPanel,
     domain: req.body.domain,
     SEOKeywords: req.body.SEOKeywords,
-    legalDocuments: req.body.legalDocuments,
     comments: req.body.comments,
   });
 

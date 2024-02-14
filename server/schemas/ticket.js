@@ -3,6 +3,15 @@ const Schema = mongoose.Schema;
 
 const ticketSchema = new Schema({
   username: { type: String, required: true }, //username for accessing our portal
+  title: { type: String, required: true },
+  domainURL: { type: String, required: true },
+  category: { type: String, required: true }, //range 1 2 3 4 5, each stands for pbc, seo, web maintainace and governace, new website build, and new app build
+  priority: {
+    type: String,
+    required: true,
+    enum: ["ASAP", "high", "medium", "low"],
+    default: "medium",
+  },
   branding: {
     files: [String], //array of media urls
     colorCodes: {
