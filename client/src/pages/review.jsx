@@ -1,10 +1,9 @@
-import React, { Component } from "react";
-import { MaterialReactTable } from "material-react-table";
-import { getAuthToken, getAuthUser } from "../components/auth";
 import { Box } from "@mui/material";
-import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
-import ReactPlayer from "react-player";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { MaterialReactTable } from "material-react-table";
+import React, { Component } from "react";
+import { getAuthToken, getAuthUser } from "../components/auth";
 import { HOST } from "../const";
 class Review extends Component {
   constructor(props) {
@@ -14,6 +13,7 @@ class Review extends Component {
       tagFilter: [],
       tagInput: [],
       posts: [],
+      status: 'open',
       height: 0,
       toggleList: true,
     };
@@ -22,26 +22,30 @@ class Review extends Component {
   columns = [
     {
       accessorKey: "title",
+      size:200,
       header: "Title",
-      muiTableHeadCellProps: { sx: { color: "black" } },
+      muiTableHeadCellProps: { sx: { color: "black"}},
       Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
     },
     {
       accessorKey: "username",
       header: "Username",
-      muiTableHeadCellProps: { sx: { color: "black" } },
+      size:50,
+      muiTableHeadCellProps: { sx: { color: "black"} },
       Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
     },
     {
       accessorKey: "domainURL",
       header: "Domain",
-      muiTableHeadCellProps: { sx: { color: "black" } },
+      size:70,
+      muiTableHeadCellProps: { sx: { color: "black"} },
       Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
     },
     {
       accessorKey: "category",
       header: "Service Type",
       filterFn: "equals",
+      size:50,
       filterSelectOptions: [
         { text: "PBC", value: "1" },
         { text: "SEO", value: "2" },
@@ -79,7 +83,7 @@ class Review extends Component {
       muiTableHeadCellProps: { sx: { color: "black" } },
       Cell: ({ renderedCellValue }) => (
         <div
-          className="item_info_type col-auto m-2 rounded"
+          className="item_info_type col-auto m-2 rounded priority"
           style={{
             backgroundColor: `${
               renderedCellValue == "ASAP"
@@ -104,11 +108,26 @@ class Review extends Component {
       });
     }
   }
+  handleDelete = (id) => {
+    if (!window.confirm(`Delete this ticket?`)) {
+      return;
+    }
+
+    axios
+      .delete(`http://${HOST}:8080/ticket/${id}`, {
+        headers: { Authorization: `Bearer ${getAuthToken()}` },
+      })
+      .then((res) => {
+        alert('Ticket deleted');
+        window.location.reload(false);
+      })
+      .catch((err) => alert(err.response.data));
+  };
   async updatePosts() {
     await axios
       .post(
         `http://${HOST}:8080/ticket`,
-        { user: getAuthUser() },
+        { user: getAuthUser(), status: this.state.status },
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
       .then((res) => {
@@ -138,17 +157,31 @@ class Review extends Component {
               data={this.state.posts}
               editingMode="modal"
               enableEditing
+              layoutMode="semantic"
               onEditingRowSave={this.handleSaveRow}
               renderRowActions={({ row, table }) => (
-                <Box sx={{ display: "flex", gap: "1rem" }}>
-                  <input
-                    type="button"
-                    onClick={() =>
-                      window.open(`/review/${row.original._id}`, "_self")
-                    }
-                    className="btn-main"
-                    value="View"
-                  />
+                <Box sx={{ display: "flex", gap: "1rem"}}>
+                  <button
+  onClick={() => window.open(`/review/${row.original._id}`, "_self")}
+  className="btn-action"
+  title="View">
+  <i class="fas fa-eye"></i> 
+</button>
+
+<button
+  onClick={() => this.handleDelete(row.original._id)}
+  className="btn-action"
+  title="Delete">
+  <i class="fas fa-trash"></i>
+</button>
+
+<button
+  onClick={() => window.open(`/edit/${row.original._id}`, "_self")}
+  className="btn-action"
+  title="Edit">
+  <i class="fas fa-pencil-alt"></i>
+</button>
+
                 </Box>
               )}
             />

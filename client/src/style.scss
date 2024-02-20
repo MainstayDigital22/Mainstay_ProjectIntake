@@ -658,6 +658,40 @@ p.lead {
   margin-top: 0;
   font-weight: 400;
 }
+.priority{
+  display: block;
+  width: max-content;
+  text-align: center;;
+  background: #0b59ef;
+  border-radius: 6px;
+  letter-spacing: normal;
+  outline: 0;
+  font-weight: 800;
+  text-decoration: none;
+  padding: 6px 40px;
+  font-size: 14px;
+}
+.btn-action{
+  display: block;
+  width: max-content;
+  text-align: center;
+  color: #fff !important;
+  background: #0b59ef;
+  border-radius: 6px;
+  letter-spacing: normal;
+  outline: 0;
+  width:40px;
+  height:40px;
+  padding-right:auto;
+  padding-left: auto;
+  font-weight: 800;
+  text-decoration: none;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 2px 2px 20px 0px rgba(131, 100, 226, 0);
+  transition: all 0.3s ease;
+}
 .btn-main {
   display: block;
   width: max-content;

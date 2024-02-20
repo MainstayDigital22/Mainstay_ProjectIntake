@@ -48,6 +48,15 @@ const App = () => {
           }
         />
         <Route
+          path="/edit/:id"
+          element={
+            <Protected perms={["admin", "staff", "client"]}>
+              <Header />
+              <Ticket />
+            </Protected>
+          }
+        />
+        <Route
           path="/onboard"
           element={
             <Protected perms={["admin", "staff", "client"]}>

@@ -12,6 +12,12 @@ const ticketSchema = new Schema({
     enum: ["ASAP", "high", "medium", "low"],
     default: "medium",
   },
+  status: {
+    type: String,
+    required: true,
+    enum: ["open", "closed", "archived"],
+    default: "open",
+  },
   branding: {
     files: [String], //array of media urls
     colorCodes: {

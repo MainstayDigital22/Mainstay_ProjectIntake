@@ -11,7 +11,7 @@ let gfs;
 
 connection.once("open", () => {
   gfs = new mongoose.mongo.GridFSBucket(connection.db, {
-    bucketName: "photos",
+    bucketName: "files",
   });
 });
 
@@ -43,7 +43,7 @@ router.post("/upload", async (req, res) => {
   try {
     await multerUpload(req, res); // Wait for files to be uploaded
     if (req.files.length === 0)
-      return res.send("You must select at least one file.");
+      return res.send([]);
 
     const urls = req.files.map((file, index) => {
       return `http://${HOST}:${PORT}/file/${file.filename}`;

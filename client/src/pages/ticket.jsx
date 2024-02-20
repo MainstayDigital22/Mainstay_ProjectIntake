@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { Component } from "react";
+import { useParams } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
 import { getAuthToken, getAuthUser } from "../components/auth";
 import { HOST } from "../const";
@@ -55,23 +56,78 @@ h5{
     user-select: none;
   }
 `;
-
-export default class Ticket extends Component {
-  constructor() {
-    super();
+function withParams(Component) {
+  return (props) => <Component {...props} params={useParams()} />;
+}
+class Ticket extends Component {
+  constructor(props){
+    super(props);
     this.state = {
+      actionLock: false,
+      errors:{},
+      category:1,
       brandingFiles: [],
       brandingDesignDocuments: [],
-      actionLock: false,
-      category: 1,
-      priority: "medium",
+      priority:'medium'
     };
   }
-  handleChange = (event) => {
-    const { name, value } = event.target;
-    this.setState({ [name]: value });
-    console.log(this.state.category);
+  validateForm = () => {
+    const errors = {};
+    const requiredFields = ['title', 'domainURL']; // List of required field names
+    requiredFields.forEach(fieldName => {
+      if (!this.state[fieldName] || this.state[fieldName].trim() === '') {
+        errors[fieldName] = `${fieldName} cannot be empty`; // Customize the error message as needed
+      }
+    });
+
+    this.setState({ errors });
+    return Object.keys(errors).length === 0; // Form is valid if there are no errors
   };
+  handleChange = (event) => {
+  const { name, value } = event.target;
+  const nameParts = name.split('.'); 
+  if (nameParts.length > 1) {
+    this.setState((prevState) => {
+      let updatedState = { ...prevState };
+      let currentPart = updatedState;
+
+      for (let i = 0; i < nameParts.length - 1; i++) {
+        if (!currentPart[nameParts[i]]) {
+          currentPart[nameParts[i]] = {};
+        }
+        currentPart = currentPart[nameParts[i]];
+      }
+      currentPart[nameParts[nameParts.length - 1]] = value;
+
+      return updatedState;
+    });
+  } else {
+    this.setState({ [name]: value });
+  }
+};
+
+  componentDidMount() {
+    const { id } = this.props.params;
+    if(id){this.fetchData(id);}
+  }
+  async fetchData(id) {
+    this.setState({
+      id: id,
+    });
+    await axios
+      .get(`http://${HOST}:8080/ticket/${id}`, {
+        headers: { Authorization: `Bearer ${getAuthToken()}` },
+      })
+      .then((res) => {
+        this.setState((prevState) => ({
+            ...prevState,
+            ...res.data[0]
+        }));
+      })
+      .catch((err) => {
+        console.log(err.response || err);
+      });
+  }
   deleteDesignDocuments = () => {
     this.setState({ brandingDesignDocuments: [] });
     document.getElementById("delete_dd").classList.add("hide");
@@ -110,6 +166,10 @@ export default class Ticket extends Component {
     if (this.state.actionLock) {
       return;
     }
+    if(!this.validateForm()){
+      alert('Please fill out all required fields')
+      return
+    }
     this.setState({
       actionLock: true,
     });
@@ -130,7 +190,7 @@ export default class Ticket extends Component {
       .then((res) => {
         axios
           .post(
-            `http://${HOST}:8080/ticket/add`,
+            `http://${HOST}:8080/ticket/${this.state._id?`update/${this.state._id}`:'add'}`,
             {
               username: getAuthUser(),
               category: this.state.category,
@@ -138,36 +198,23 @@ export default class Ticket extends Component {
               title: this.state.title,
               priority: this.state.priority,
               branding: {
-                files: res.data.slice(0, this.state.brandingFiles.length),
-                colorCodes: this.state.colorCodes,
-                fonts: this.state.fonts,
-                designDocument: res.data.slice(
+                files: (this.state._id&&this.state.branding?.files)?this.state.branding.files.concat(res.data.slice(0, this.state.brandingFiles.length)):this.state.brandingFiles.length!=0?res.data.slice(0, this.state.brandingFiles.length):undefined,
+                colorCodes: this.state.branding?.colorCodes,
+                fonts: this.state.branding?.fonts,
+                designDocument: (this.state._id&&this.state.branding?.files)?this.state.branding.designDocument.concat(res.data.slice(
                   this.state.brandingFiles.length,
                   this.state.brandingFiles.length +
                     this.state.brandingDesignDocuments.length
-                ),
+                )):this.state.brandingDesignDocuments.length!=0?res.data.slice(
+                  this.state.brandingFiles.length,
+                  this.state.brandingFiles.length +
+                    this.state.brandingDesignDocuments.length
+                ):undefined,
               },
-              hosting: {
-                proivider: this.state.hostingProvider,
-                username: this.state.hostingUsername,
-                password: this.state.hostingPassword,
-              },
-              FTP: {
-                provider: this.state.ftpProvider,
-                username: this.state.ftpUsername,
-                password: this.state.ftpPassword,
-                liveDirectory: this.state.ftpLiveDirectory,
-              },
-              controlPanel: {
-                url: this.state.controlURL,
-                username: this.state.controlUsername,
-                password: this.state.controlPassword,
-              },
-              domain: {
-                provider: this.state.domainProvider,
-                username: this.state.domainUsername,
-                password: this.state.domainPassword,
-              },
+              hosting: this.state.hosting,
+              FTP:this.state.FTP,
+              controlPanel: this.state.controlPanel,
+              domain: this.state.domain,
               SEOKeywords: this.state.seoKeywords,
               comments: this.state.comments,
             },
@@ -176,12 +223,12 @@ export default class Ticket extends Component {
           .then((res) => {
             this.setState({ actionLock: false });
             if (res.status == 200) {
-              alert("Ticket Created!");
-              window.location.href = "/";
+              alert(this.state._id?"Ticket Edited!":"Ticket Created!");
+              window.location.href = `/review/${this.state._id||res.data.id}`;
             }
           });
       })
-      .catch((err) => alert(err));
+      .catch((err) => {alert(err);this.setState({ actionLock: false });});
   };
   render() {
     return (
@@ -191,19 +238,21 @@ export default class Ticket extends Component {
           <div className="row">
             <div className="col mb-5">
               <form className="form-border">
-                <h5>Title</h5>
+                <h5>Title *</h5>
                 <input
                   type="text"
                   name="title"
-                  className={`form-control ${this.state.nameError && "error"}`}
+                  defaultValue={this.state.title}
+                  className={`form-control ${this.state.errors.title && "error"}`}
                   placeholder=""
                   onChange={this.handleChange}
                 />
-                <h5>Domain URL</h5>
+                <h5>Domain URL *</h5>
                 <input
                   type="text"
                   name="domainURL"
-                  className={`form-control ${this.state.nameError && "error"}`}
+                  defaultValue={this.state.domainURL}
+                  className={`form-control ${this.state.errors.domainURL && "error"}`}
                   placeholder=""
                   onChange={this.handleChange}
                 />
@@ -214,11 +263,11 @@ export default class Ticket extends Component {
                       name="category"
                       onChange={this.handleChange}
                       className="form-control">
-                      <option value={1}>PBC</option>
-                      <option value={2}>SEO</option>
-                      <option value={3}>Web Maintenance and Governance</option>
-                      <option value={4}>New Website Build</option>
-                      <option value={5}>New App Build</option>
+                      <option value={1} selected={![2,3,4,5].includes(this.state.category)}>PBC</option>
+                      <option value={2} selected={this.state.category==2}>SEO</option>
+                      <option value={3} selected={this.state.category==3}>Web Maintenance and Governance</option>
+                      <option value={4} selected={this.state.category==4}>New Website Build</option>
+                      <option value={5} selected={this.state.category==5}>New App Build</option>
                     </select>
                   </div>
                 </div>
@@ -228,12 +277,13 @@ export default class Ticket extends Component {
                     <select
                       name="priority"
                       value={this.state.priority}
+                      defaultValue={this.state.priority}
                       onChange={this.handleChange}
                       className="form-control">
-                      <option value="ASAP">ASAP</option>
-                      <option value="high">High</option>
-                      <option value="medium">Medium</option>
-                      <option value="low">Low</option>
+                      <option value="ASAP" selected={this.state.category=="ASAP"}>ASAP</option>
+                      <option value="high" selected={this.state.category=="high"}>High</option>
+                      <option value="medium" selected={!['ASAP','low','high'].includes(this.state.priority)}>Medium</option>
+                      <option value="low" selected={this.state.category=='low'}>Low</option>
                     </select>
                   </div>
                 </div>
@@ -250,7 +300,8 @@ export default class Ticket extends Component {
                             <h5>Color Codes</h5>
                             <input
                               type="text"
-                              name="colorCodes"
+                              name="branding.colorCodes"
+                              defaultValue={this.state.branding?.colorCodes}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -262,7 +313,8 @@ export default class Ticket extends Component {
                             <h5>Fonts</h5>
                             <input
                               type="text"
-                              name="fonts"
+                              name="branding.fonts"
+                              defaultValue={this.state.branding?.fonts}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -349,7 +401,8 @@ export default class Ticket extends Component {
                             <h5>Provider</h5>
                             <input
                               type="text"
-                              name="hostingProvider"
+                              name="hosting.provider"
+                              defaultValue={this.state.hosting?.provider}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -361,7 +414,8 @@ export default class Ticket extends Component {
                             <h5>Username</h5>
                             <input
                               type="text"
-                              name="hostingUsername"
+                              name="hosting.username"
+                              defaultValue={this.state.hosting?.username}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -373,7 +427,8 @@ export default class Ticket extends Component {
                             <h5>Password</h5>
                             <input
                               type="text"
-                              name="hostingPassword"
+                              name="hosting.password"
+                              defaultValue={this.state.hosting?.password}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -396,7 +451,8 @@ export default class Ticket extends Component {
                             <h5>Provider</h5>
                             <input
                               type="text"
-                              name="ftpProvider"
+                              name="FTP.provider"
+                              defaultValue={this.state.FTP?.provider}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -408,7 +464,8 @@ export default class Ticket extends Component {
                             <h5>Username</h5>
                             <input
                               type="text"
-                              name="ftpUsername"
+                              name="FTP.username"
+                              defaultValue={this.state.FTP?.username}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -422,7 +479,8 @@ export default class Ticket extends Component {
                             <h5>Password</h5>
                             <input
                               type="text"
-                              name="ftpPassword"
+                              name="FTP.password"
+                              defaultValue={this.state.FTP?.password}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -434,7 +492,8 @@ export default class Ticket extends Component {
                             <h5>Live Directory Path</h5>
                             <input
                               type="text"
-                              name="ftpLiveDirectory"
+                              name="FTP.liveDirectory"
+                              defaultValue={this.state.FTP?.liveDirectory}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -463,7 +522,8 @@ export default class Ticket extends Component {
                             <h5>URL</h5>
                             <input
                               type="text"
-                              name="controlURL"
+                              name="controlPanel.url"
+                              defaultValue={this.state.controlPanel?.url}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -475,7 +535,8 @@ export default class Ticket extends Component {
                             <h5>Username</h5>
                             <input
                               type="text"
-                              name="controlUsername"
+                              name="controlPanel.username"
+                              defaultValue={this.state.controlPanel?.username}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -487,7 +548,8 @@ export default class Ticket extends Component {
                             <h5>Password</h5>
                             <input
                               type="text"
-                              name="controlPassword"
+                              name="controlPanel.password"
+                              defaultValue={this.state.controlPanel?.password}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -510,7 +572,8 @@ export default class Ticket extends Component {
                             <h5>Provider</h5>
                             <input
                               type="text"
-                              name="domainProvider"
+                              name="domain.provider"
+                              defaultValue={this.state.domain?.provider}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -522,7 +585,8 @@ export default class Ticket extends Component {
                             <h5>Username</h5>
                             <input
                               type="text"
-                              name="domainUsername"
+                              name="domain.username"
+                              defaultValue={this.state.domain?.username}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -534,7 +598,8 @@ export default class Ticket extends Component {
                             <h5>Password</h5>
                             <input
                               type="text"
-                              name="domainPassword"
+                              name="domain.password"
+                              defaultValue={this.state.domain?.password}
                               className={`form-control ${
                                 this.state.nameError && "error"
                               }`}
@@ -552,6 +617,7 @@ export default class Ticket extends Component {
                       <input
                         type="text"
                         name="seoKeywords"
+                        defaultValue={this.state.seoKeywords}
                         className={`form-control ${
                           this.state.nameError && "error"
                         }`}
@@ -564,6 +630,7 @@ export default class Ticket extends Component {
                   <input
                     type="text"
                     name="comments"
+                    defaultValue={this.state.comments}
                     className={`form-control ${
                       this.state.nameError && "error"
                     }`}
@@ -575,7 +642,7 @@ export default class Ticket extends Component {
                     id="submit"
                     onClick={this.submit}
                     className="btn-main"
-                    value="Create Ticket"
+                    value={this.state._id?"Edit Ticket":"Create Ticket"}
                   />
                 </div>
               </form>
@@ -586,3 +653,5 @@ export default class Ticket extends Component {
     );
   }
 }
+
+export default withParams(Ticket);
