@@ -4,7 +4,7 @@ const { auth } = require("./auth");
 const { deleteFile } = require("./upload");
 
 router.route("/").post(async (req, res) => {
-  if ((await auth(req, ["admin", "staff", "user"])) !== 1) {
+  if ((await auth(req, ["admin", "staff", "client"])) !== 1) {
     res.status(403).json("Auth Error");
     return;
   }
@@ -12,9 +12,6 @@ router.route("/").post(async (req, res) => {
   if ((await auth(req, ["admin", "staff"])) === 1) {
     if (req.body.status) {
       query = { status: req.body.status };
-      if (req.body.user) {
-        query.username = req.body.user;
-      }
     }
   } else {
     query.username = req.body.user;
@@ -27,7 +24,7 @@ router.route("/").post(async (req, res) => {
     .catch(err => res.status(400).json("Error: " + err));
 });
 router.route("/add").post(async (req, res) => {
-  if ((await auth(req, ["admin", "staff", "user"])) !== 1) {
+  if ((await auth(req, ["admin", "staff", "client"])) !== 1) {
     res.status(403).json("Auth Error");
     return;
   }
@@ -82,7 +79,7 @@ router.route("/:_id").get(async (req, res) => {
 });
 
 router.route('/update/:id').post(async (req, res) => {
-  if ((await auth(req, ['admin', 'staff', 'user'])) !== 1) {
+  if ((await auth(req, ['admin', 'staff', 'client'])) !== 1) {
     res.status(403).json('Auth Error');
     return;
   }

@@ -3,7 +3,7 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { MaterialReactTable } from "material-react-table";
 import React, { Component } from "react";
-import { getAuthToken, getAuthUser } from "../components/auth";
+import { getAuthLevel, getAuthToken, getAuthUser } from "../components/auth";
 import { HOST } from "../const";
 class Review extends Component {
   constructor(props) {
@@ -168,13 +168,13 @@ class Review extends Component {
   <i class="fas fa-eye"></i> 
 </button>
 
-<button
+{getAuthLevel()=='admin'&&<button
   onClick={() => this.handleDelete(row.original._id)}
   className="btn-action"
   title="Delete">
   <i class="fas fa-trash"></i>
 </button>
-
+}
 <button
   onClick={() => window.open(`/edit/${row.original._id}`, "_self")}
   className="btn-action"

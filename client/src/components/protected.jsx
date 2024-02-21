@@ -1,6 +1,5 @@
-import { Navigate } from "react-router-dom";
-import axios from "axios";
 import jwt_decode from "jwt-decode";
+import { Navigate } from "react-router-dom";
 const Protected = ({ perms, children }) => {
   function auth(perms) {
     const storage = JSON.parse(localStorage.getItem("user"));
@@ -15,6 +14,6 @@ const Protected = ({ perms, children }) => {
   if (auth(perms)) {
     return children;
   }
-  return <Navigate to="/login" replace />;
+  return <Navigate to="/" replace />;
 };
 export default Protected;

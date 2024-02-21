@@ -23,7 +23,7 @@ const App = () => {
         <Route
           path="/review"
           element={
-            <Protected perms={["admin"]}>
+            <Protected perms={["admin","staff","client"]}>
               <Header />
               <Review />
             </Protected>
@@ -32,7 +32,7 @@ const App = () => {
         <Route
           path="/review/:id"
           element={
-            <Protected perms={["admin"]}>
+            <Protected perms={["admin","staff","client"]}>
               <Header />
               <Details />
             </Protected>

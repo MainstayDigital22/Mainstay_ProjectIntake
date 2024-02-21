@@ -89,10 +89,10 @@ export default class OnBoard extends Component {
  componentDidMount(){
   axios.get(`http://${HOST}:8080/user`,
   { headers: { Authorization: `Bearer ${getAuthToken()}` } }).then((res)=>{
-    this.setState({users:res.data.filter((user)=>{return user.permission=='user'}),username:'__new_user'})
+    this.setState({users:res.data.filter((user)=>{return user.permission=='client'}),username:'__new_user'})
   })
  }
-  submit = () => {
+  submit = async () => {
     if (this.state.actionLock) {
       return;
     }
@@ -103,7 +103,23 @@ export default class OnBoard extends Component {
     for (let i = 0; i < this.state.legalDocuments.length; i += 1) {
       formData.append("files", this.state.legalDocuments[i]);
     }
-
+    if(this.state.username=='__new_user'){
+      let req = await axios
+      .post(`http://${HOST}:8080/user/signup`, {
+        username: this.state.newusername,
+        name: this.state.name,
+        password: this.state.password,
+        email: this.state.email,
+        phone: this.state.phone,
+      })
+      if(req.status==200){
+        this.setState({username:this.state.newusername})
+      }else{
+        alert('can not create new user')
+        this.setState({actionLock:false})
+        return
+      }
+    }
     axios
       .post(`http://${HOST}:8080/file/upload`, formData, {
         headers: {
@@ -129,7 +145,7 @@ export default class OnBoard extends Component {
           .then((res)=>{this.setState({actionLock:false});
           if(res.status==200){alert("Client Updated!");window.location.href = "/";}});
       })
-      .catch((err) => alert(err));
+      .catch((err) => {alert(err);this.setState({actionLock:false})});
   };
   render() {
     return (
@@ -157,10 +173,10 @@ export default class OnBoard extends Component {
                 </div>}
                 {this.state.username=='__new_user'&&<><div className="row">
                     <div className="col-6">
-                      <h5>Userame</h5>
+                      <h5>Username</h5>
                       <input
                         type="text"
-                        name="username"
+                        name="newusername"
                         className={`form-control ${
                           this.state.nameError && "error"
                         }`}
