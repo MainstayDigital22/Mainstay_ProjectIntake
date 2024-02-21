@@ -169,7 +169,7 @@ router.route("/login").post(async function (req, res) {
   }
 });
 router.route("/refresh").post(async function (req, res) {
-  if ((await auth(req, 3)) !== 1) {
+  if ((await auth(req, ['admin','staff','user'])) !== 1) {
     res.status(403).json("Auth Error");
     return;
   }
