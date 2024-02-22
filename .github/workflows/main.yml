@@ -27,7 +27,7 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
           server: ${{ secrets.FTP_SERVER }}
-          username: chris
+          username: chris@kellym107.sg-host.com
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: client/build/
           port: 21
