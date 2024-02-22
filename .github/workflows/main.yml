@@ -30,6 +30,7 @@ jobs:
           username: chris
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: client/build/
+          port: 21
           git-ftp-args: --insecure  # Use this if your FTP server does not support FTPS
           # For more secure FTP (like SFTP or FTPS), see the action's documentation for additional configuration
 
