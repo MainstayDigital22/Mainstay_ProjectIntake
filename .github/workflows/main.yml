@@ -26,9 +26,9 @@ jobs:
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
-          ftp-server: ftp://${{ secrets.FTP_SERVER }}
-          ftp-username: chris
-          ftp-password: ${{ secrets.FTP_PASSWORD }}
+          server: ftp://${{ secrets.FTP_SERVER }}
+          username: chris
+          password: ${{ secrets.FTP_PASSWORD }}
           local-dir: build/
           git-ftp-args: --insecure  # Use this if your FTP server does not support FTPS
           # For more secure FTP (like SFTP or FTPS), see the action's documentation for additional configuration
