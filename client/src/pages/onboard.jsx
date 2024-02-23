@@ -87,7 +87,7 @@ export default class OnBoard extends Component {
     }
   };
  componentDidMount(){
-  axios.get(`http://${HOST}:8080/user`,
+  axios.get(`${HOST}:8080/user`,
   { headers: { Authorization: `Bearer ${getAuthToken()}` } }).then((res)=>{
     this.setState({users:res.data.filter((user)=>{return user.permission=='client'}),username:'__new_user'})
   })
@@ -105,7 +105,7 @@ export default class OnBoard extends Component {
     }
     if(this.state.username=='__new_user'){
       let req = await axios
-      .post(`http://${HOST}:8080/user/signup`, {
+      .post(`${HOST}:8080/user/signup`, {
         username: this.state.newusername,
         name: this.state.name,
         password: this.state.password,
@@ -121,7 +121,7 @@ export default class OnBoard extends Component {
       }
     }
     axios
-      .post(`http://${HOST}:8080/file/upload`, formData, {
+      .post(`${HOST}:8080/file/upload`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -129,7 +129,7 @@ export default class OnBoard extends Component {
       .then((res) => {
         axios
           .post(
-            `http://${HOST}:8080/user/onboard`,
+            `${HOST}:8080/user/onboard`,
             {
               username: this.state.username,
               companyName: this.state.companyName,
