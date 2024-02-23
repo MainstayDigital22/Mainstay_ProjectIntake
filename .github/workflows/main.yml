@@ -11,6 +11,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          node-version: '20'
 
       - name: Install Node.js
         uses: actions/setup-node@v2
@@ -25,6 +27,7 @@ jobs:
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
+          node-version: '20'
           server: ${{ secrets.FTP_SERVER }}
           username: chris@kellym107.sg-host.com
           password: ${{ secrets.FTP_PASSWORD }}
