@@ -29,7 +29,6 @@ jobs:
           username: chris@kellym107.sg-host.com
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: client/build/
-          dangerous-clean-slate: true
           server-dir: kellym107.sg-host.com/public_html/
           port: 21
           git-ftp-args: --insecure  # Use this if your FTP server does not support FTPS
