@@ -40,7 +40,7 @@ class Details extends Component {
       id: id,
     });
     await axios
-      .get(`http://${HOST}:8080/ticket/${id}`, {
+      .get(`${HOST}:8080/ticket/${id}`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
@@ -65,7 +65,7 @@ class Details extends Component {
     });
     axios
       .post(
-        `http://${HOST}:8080/ticket/update/${this.state.id}`,
+        `${HOST}:8080/ticket/update/${this.state.id}`,
         { status: 'archived'},
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
@@ -87,7 +87,7 @@ class Details extends Component {
     });
     axios
       .post(
-        `http://${HOST}:8080/ticket/update/${this.state.id}`,
+        `${HOST}:8080/ticket/update/${this.state.id}`,
         { status: 'open'},
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
@@ -109,7 +109,7 @@ class Details extends Component {
     });
     axios
       .post(
-        `http://${HOST}:8080/ticket/update/${this.state.id}`,
+        `${HOST}:8080/ticket/update/${this.state.id}`,
         { status: 'close'},
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
@@ -130,7 +130,7 @@ class Details extends Component {
       actionLock: true,
     });
     axios
-      .delete(`http://${HOST}:8080/ticket/${this.state.id}`, {
+      .delete(`${HOST}:8080/ticket/${this.state.id}`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
