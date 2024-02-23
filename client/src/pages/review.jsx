@@ -114,7 +114,7 @@ class Review extends Component {
     }
 
     axios
-      .delete(`http://${HOST}:8080/ticket/${id}`, {
+      .delete(`${HOST}:8080/ticket/${id}`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
@@ -126,7 +126,7 @@ class Review extends Component {
   async updatePosts() {
     await axios
       .post(
-        `http://${HOST}:8080/ticket`,
+        `${HOST}:8080/ticket`,
         { user: getAuthUser(), status: this.state.status },
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
