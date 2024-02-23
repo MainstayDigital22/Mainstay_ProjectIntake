@@ -1,1 +1,1 @@
-export const HOST= "https://mainstay-mirror.onrender.com"
+export const HOST = "https://mainstay-mirror.onrender.com";
