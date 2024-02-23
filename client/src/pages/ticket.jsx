@@ -115,7 +115,7 @@ class Ticket extends Component {
       id: id,
     });
     await axios
-      .get(`http://${HOST}:8080/ticket/${id}`, {
+      .get(`${HOST}:8080/ticket/${id}`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
@@ -182,7 +182,7 @@ class Ticket extends Component {
     }
 
     axios
-      .post(`http://${HOST}:8080/file/upload`, formData, {
+      .post(`${HOST}:8080/file/upload`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -190,7 +190,7 @@ class Ticket extends Component {
       .then((res) => {
         axios
           .post(
-            `http://${HOST}:8080/ticket/${this.state._id?`update/${this.state._id}`:'add'}`,
+            `${HOST}:8080/ticket/${this.state._id?`update/${this.state._id}`:'add'}`,
             {
               username: getAuthUser(),
               category: this.state.category,
