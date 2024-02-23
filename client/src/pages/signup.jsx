@@ -20,7 +20,7 @@ const SignUp = () => {
       return;
     }
     axios
-      .post(`${HOST}:8080/user/signup`, {
+      .post(`${HOST}/user/signup`, {
         username,
         name: fullname,
         password,

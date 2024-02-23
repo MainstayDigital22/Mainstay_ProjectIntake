@@ -40,7 +40,7 @@ class Details extends Component {
       id: id,
     });
     await axios
-      .get(`${HOST}:8080/ticket/${id}`, {
+      .get(`${HOST}/ticket/${id}`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
@@ -65,8 +65,8 @@ class Details extends Component {
     });
     axios
       .post(
-        `${HOST}:8080/ticket/update/${this.state.id}`,
-        { status: 'archived'},
+        `${HOST}/ticket/update/${this.state.id}`,
+        { status: "archived" },
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
       .then((res) => {
@@ -87,8 +87,8 @@ class Details extends Component {
     });
     axios
       .post(
-        `${HOST}:8080/ticket/update/${this.state.id}`,
-        { status: 'open'},
+        `${HOST}/ticket/update/${this.state.id}`,
+        { status: "open" },
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
       .then((res) => {
@@ -109,8 +109,8 @@ class Details extends Component {
     });
     axios
       .post(
-        `${HOST}:8080/ticket/update/${this.state.id}`,
-        { status: 'close'},
+        `${HOST}/ticket/update/${this.state.id}`,
+        { status: "close" },
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
       .then((res) => {
@@ -130,7 +130,7 @@ class Details extends Component {
       actionLock: true,
     });
     axios
-      .delete(`${HOST}:8080/ticket/${this.state.id}`, {
+      .delete(`${HOST}/ticket/${this.state.id}`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
@@ -148,97 +148,114 @@ class Details extends Component {
   render() {
     return (
       <div>
-        
         <GlobalStyles />
         {this.state.ticket ? (
           <>
-            {this.state.ticket[0].username === getAuthUser() || getAuthLevel() <= 1 ? (
+            {this.state.ticket[0].username === getAuthUser() ||
+            getAuthLevel() <= 1 ? (
               <div className="container">
                 <div className="row mt-md-5 pt-md-4">
                   <ul>
                     {Object.keys(this.state.ticket[0]).map((key) => {
-                      if (this.state.ticket[0][key] && typeof this.state.ticket[0][key] === 'object' && !Array.isArray(this.state.ticket[0][key])) {
+                      if (
+                        this.state.ticket[0][key] &&
+                        typeof this.state.ticket[0][key] === "object" &&
+                        !Array.isArray(this.state.ticket[0][key])
+                      ) {
                         // For nested objects like branding, hosting, etc.
                         return (
                           <li key={key}>
                             <strong>{key}:</strong>
                             <ul>
-                              {Object.keys(this.state.ticket[0][key]).map(subKey => {
-                                if (this.state.ticket[0][key][subKey]) {
-                                  return <li key={subKey}><strong>{subKey}:</strong> {JSON.stringify(this.state.ticket[0][key][subKey])}</li>;
+                              {Object.keys(this.state.ticket[0][key]).map(
+                                (subKey) => {
+                                  if (this.state.ticket[0][key][subKey]) {
+                                    return (
+                                      <li key={subKey}>
+                                        <strong>{subKey}:</strong>{" "}
+                                        {JSON.stringify(
+                                          this.state.ticket[0][key][subKey]
+                                        )}
+                                      </li>
+                                    );
+                                  }
+                                  return null;
                                 }
-                                return null;
-                              })}
+                              )}
                             </ul>
                           </li>
                         );
                       } else if (this.state.ticket[0][key]) {
                         // For simple fields
-                        return <li key={key}><strong>{key}:</strong> {this.state.ticket[0][key]}</li>;
+                        return (
+                          <li key={key}>
+                            <strong>{key}:</strong> {this.state.ticket[0][key]}
+                          </li>
+                        );
                       }
                       return null;
                     })}
                   </ul>
                 </div>
                 <div className="row">
-                        {['admin','staff'].includes(getAuthLevel()) ? (
-                          <>
-                            {this.state.ticket[0].status != 'open' ? (
-                              <input
-                                type="button"
-                                id="submit"
-                                onClick={this.open}
-                                className="btn-main col m-1"
-                                value="Reopen"
-                              />
-                            ) : (
-                              <></>
-                            )}
-                            {this.state.ticket[0].status != 'close' ? (
-                              <input
-                                type="button"
-                                id="submit"
-                                onClick={this.close}
-                                className="btn-main col m-1"
-                                value="Close"
-                              />
-                            ) : (
-                              <></>
-                            )}
-                            {this.state.ticket[0].status != 'archived' ? (
-                              <input
-                                type="button"
-                                id="submit"
-                                onClick={this.archive}
-                                className="btn-main col m-1"
-                                value="Archive"
-                              />
-                            ) : (
-                              <></>
-                            )}
-                          </>
-                        ) : (
-                          <></>
-                        )}
+                  {["admin", "staff"].includes(getAuthLevel()) ? (
+                    <>
+                      {this.state.ticket[0].status != "open" ? (
                         <input
                           type="button"
                           id="submit"
-                          onClick={this.edit}
+                          onClick={this.open}
                           className="btn-main col m-1"
-                          value="Edit"
+                          value="Reopen"
                         />
-                        {getAuthLevel() == 'admin' ? (
-                          <input
-                            type="button"
-                            id="submit"
-                            onClick={this.delete}
-                            className="btn-main col m-1"
-                            value="Delete"
-                          />
-                        ) : (
-                          <></>
-                        )}
-                      </div>
+                      ) : (
+                        <></>
+                      )}
+                      {this.state.ticket[0].status != "close" ? (
+                        <input
+                          type="button"
+                          id="submit"
+                          onClick={this.close}
+                          className="btn-main col m-1"
+                          value="Close"
+                        />
+                      ) : (
+                        <></>
+                      )}
+                      {this.state.ticket[0].status != "archived" ? (
+                        <input
+                          type="button"
+                          id="submit"
+                          onClick={this.archive}
+                          className="btn-main col m-1"
+                          value="Archive"
+                        />
+                      ) : (
+                        <></>
+                      )}
+                    </>
+                  ) : (
+                    <></>
+                  )}
+                  <input
+                    type="button"
+                    id="submit"
+                    onClick={this.edit}
+                    className="btn-main col m-1"
+                    value="Edit"
+                  />
+                  {getAuthLevel() == "admin" ? (
+                    <input
+                      type="button"
+                      id="submit"
+                      onClick={this.delete}
+                      className="btn-main col m-1"
+                      value="Delete"
+                    />
+                  ) : (
+                    <></>
+                  )}
+                </div>
               </div>
             ) : (
               <h2>Access Denied</h2>
@@ -249,7 +266,6 @@ class Details extends Component {
         )}
       </div>
     );
-    
   }
 }
 

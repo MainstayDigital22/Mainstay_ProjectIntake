@@ -11,7 +11,7 @@ class Home extends Component {
   }
   componentDidMount() {
     axios
-      .get(`${HOST}:8080/user/stats`, {
+      .get(`${HOST}/user/stats`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {

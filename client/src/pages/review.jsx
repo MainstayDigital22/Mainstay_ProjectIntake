@@ -13,7 +13,7 @@ class Review extends Component {
       tagFilter: [],
       tagInput: [],
       posts: [],
-      status: 'open',
+      status: "open",
       height: 0,
       toggleList: true,
     };
@@ -22,30 +22,30 @@ class Review extends Component {
   columns = [
     {
       accessorKey: "title",
-      size:200,
+      size: 200,
       header: "Title",
-      muiTableHeadCellProps: { sx: { color: "black"}},
+      muiTableHeadCellProps: { sx: { color: "black" } },
       Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
     },
     {
       accessorKey: "username",
       header: "Username",
-      size:50,
-      muiTableHeadCellProps: { sx: { color: "black"} },
+      size: 50,
+      muiTableHeadCellProps: { sx: { color: "black" } },
       Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
     },
     {
       accessorKey: "domainURL",
       header: "Domain",
-      size:70,
-      muiTableHeadCellProps: { sx: { color: "black"} },
+      size: 70,
+      muiTableHeadCellProps: { sx: { color: "black" } },
       Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
     },
     {
       accessorKey: "category",
       header: "Service Type",
       filterFn: "equals",
-      size:50,
+      size: 50,
       filterSelectOptions: [
         { text: "PBC", value: "1" },
         { text: "SEO", value: "2" },
@@ -114,11 +114,11 @@ class Review extends Component {
     }
 
     axios
-      .delete(`${HOST}:8080/ticket/${id}`, {
+      .delete(`${HOST}/ticket/${id}`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
-        alert('Ticket deleted');
+        alert("Ticket deleted");
         window.location.reload(false);
       })
       .catch((err) => alert(err.response.data));
@@ -126,7 +126,7 @@ class Review extends Component {
   async updatePosts() {
     await axios
       .post(
-        `${HOST}:8080/ticket`,
+        `${HOST}/ticket`,
         { user: getAuthUser(), status: this.state.status },
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
@@ -160,28 +160,32 @@ class Review extends Component {
               layoutMode="semantic"
               onEditingRowSave={this.handleSaveRow}
               renderRowActions={({ row, table }) => (
-                <Box sx={{ display: "flex", gap: "1rem"}}>
+                <Box sx={{ display: "flex", gap: "1rem" }}>
                   <button
-  onClick={() => window.open(`/review/${row.original._id}`, "_self")}
-  className="btn-action"
-  title="View">
-  <i class="fas fa-eye"></i> 
-</button>
+                    onClick={() =>
+                      window.open(`/review/${row.original._id}`, "_self")
+                    }
+                    className="btn-action"
+                    title="View">
+                    <i class="fas fa-eye"></i>
+                  </button>
 
-{getAuthLevel()=='admin'&&<button
-  onClick={() => this.handleDelete(row.original._id)}
-  className="btn-action"
-  title="Delete">
-  <i class="fas fa-trash"></i>
-</button>
-}
-<button
-  onClick={() => window.open(`/edit/${row.original._id}`, "_self")}
-  className="btn-action"
-  title="Edit">
-  <i class="fas fa-pencil-alt"></i>
-</button>
-
+                  {getAuthLevel() == "admin" && (
+                    <button
+                      onClick={() => this.handleDelete(row.original._id)}
+                      className="btn-action"
+                      title="Delete">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  )}
+                  <button
+                    onClick={() =>
+                      window.open(`/edit/${row.original._id}`, "_self")
+                    }
+                    className="btn-action"
+                    title="Edit">
+                    <i class="fas fa-pencil-alt"></i>
+                  </button>
                 </Box>
               )}
             />

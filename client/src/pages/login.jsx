@@ -13,7 +13,7 @@ const Login = () => {
   const signupSuccess = location.state?.signupSuccess;
   function login(username, password) {
     axios
-      .post(`${HOST}:8080/user/login`, {
+      .post(`${HOST}/user/login`, {
         username: username,
         password: password,
       })
@@ -24,15 +24,13 @@ const Login = () => {
           await localStorage.setItem("user", user);
           const json = await JSON.parse(localStorage.getItem("user"));
           console.log(json);
-          axios.get(`${HOST}:8080/user/${res.data.user}`).then((res2)=>{
-            if(res2.data[0].onboard){
+          axios.get(`${HOST}/user/${res.data.user}`).then((res2) => {
+            if (res2.data[0].onboard) {
               window.location.href = "/";
-            }else{
+            } else {
               window.location.href = "/onboard";
             }
-            
-          })
-          
+          });
         }
       })
       .catch(async (err) => {

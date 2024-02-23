@@ -1,11 +1,26 @@
-import { Delete, Edit } from '@mui/icons-material';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Tooltip } from '@mui/material';
+import { Delete, Edit } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Tooltip,
+} from "@mui/material";
 import axios from "axios";
 import { MaterialReactTable } from "material-react-table";
-import React, { Component, useState } from 'react';
-import { createGlobalStyle } from 'styled-components';
+import React, { Component, useState } from "react";
+import { createGlobalStyle } from "styled-components";
 import { getAuthToken, getAuthUser } from "../components/auth";
-import { HOST } from '../const';
+import { HOST } from "../const";
 const GlobalStyles = createGlobalStyle`
   header#myHeader.navbar.sticky.white {
     background: #403f83;
@@ -40,11 +55,15 @@ const GlobalStyles = createGlobalStyle`
   }
 `;
 export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
-  const [values, setValues] = useState(() =>
-    columns.reduce((acc, column) => {
-      acc[column.accessorKey ?? ''] = '';
-      return acc;
-    }, { password: '', confirmPassword: '' }), // Add confirmPassword field
+  const [values, setValues] = useState(
+    () =>
+      columns.reduce(
+        (acc, column) => {
+          acc[column.accessorKey ?? ""] = "";
+          return acc;
+        },
+        { password: "", confirmPassword: "" }
+      ) // Add confirmPassword field
   );
 
   const [passwordError, setPasswordError] = useState(false); // State to track password validation error
@@ -67,13 +86,12 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
         <form onSubmit={(e) => e.preventDefault()}>
           <Stack
             sx={{
-              width: '100%',
-              minWidth: { xs: '300px', sm: '360px', md: '400px' },
-              gap: '1.5rem',
-            }}
-          >
-            {columns.map((column) => (
-              column.accessorKey !== 'permission' ? (
+              width: "100%",
+              minWidth: { xs: "300px", sm: "360px", md: "400px" },
+              gap: "1.5rem",
+            }}>
+            {columns.map((column) =>
+              column.accessorKey !== "permission" ? (
                 <TextField
                   key={column.accessorKey}
                   label={column.header}
@@ -91,15 +109,14 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
                     value={values.permission}
                     onChange={(e) =>
                       setValues({ ...values, permission: e.target.value })
-                    }
-                  >
-                    <MenuItem value={'admin'}>Admin</MenuItem>
-                    <MenuItem value={'staff'}>Staff</MenuItem>
-                    <MenuItem value={'user'}>User</MenuItem>
+                    }>
+                    <MenuItem value={"admin"}>Admin</MenuItem>
+                    <MenuItem value={"staff"}>Staff</MenuItem>
+                    <MenuItem value={"user"}>User</MenuItem>
                   </Select>
                 </FormControl>
               )
-            ))}
+            )}
             <TextField
               key="password"
               label="Password"
@@ -115,9 +132,7 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
               name="confirmPassword"
               type="password"
               error={passwordError} // Add error prop to display validation error
-              helperText={
-                passwordError ? 'Passwords do not match' : ''
-              }
+              helperText={passwordError ? "Passwords do not match" : ""}
               onChange={(e) =>
                 setValues({ ...values, [e.target.name]: e.target.value })
               }
@@ -125,20 +140,15 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
           </Stack>
         </form>
       </DialogContent>
-      <DialogActions sx={{ p: '1.25rem' }}>
+      <DialogActions sx={{ p: "1.25rem" }}>
         <Button onClick={onClose}>Cancel</Button>
-        <Button
-          color="secondary"
-          onClick={handleSubmit}
-          variant="contained"
-        >
+        <Button color="secondary" onClick={handleSubmit} variant="contained">
           Create New User
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
-
 
 class Users extends Component {
   constructor(props) {
@@ -157,16 +167,16 @@ class Users extends Component {
     }
 
     axios
-      .delete(`${HOST}:8080/user/${username}`, {
+      .delete(`${HOST}/user/${username}`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
-        axios.post(`${HOST}:8080/log/add`, {
+        axios.post(`${HOST}/log/add`, {
           username: getAuthUser(),
-          action: 'Delete User',
+          action: "Delete User",
           comments: `User ${getAuthUser()} deleted user ${username}`,
         });
-        alert('User deleted');
+        alert("User deleted");
         window.location.reload(false);
       })
       .catch((err) => alert(err.response.data));
@@ -181,20 +191,22 @@ class Users extends Component {
 
   handleCreate = (values) => {
     axios
-      .post(`${HOST}:8080/user/add`, values, {
+      .post(`${HOST}/user/add`, values, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
-        axios.post(`${HOST}:8080/log/add`, {
+        axios.post(`${HOST}/log/add`, {
           username: getAuthUser(),
-          action: 'Create User',
-          comments: `User ${getAuthUser()} created user ${values.username} {username: ${values.username},
+          action: "Create User",
+          comments: `User ${getAuthUser()} created user ${
+            values.username
+          } {username: ${values.username},
             name: ${values.name},
             email: ${values.email},
             phone: ${values.phone},
             permission: ${values.permission}}`,
         });
-        alert('User Created');
+        alert("User Created");
         window.location.reload(false);
       })
       .catch((err) => alert(err.response.data));
@@ -202,19 +214,23 @@ class Users extends Component {
 
   handleUpdate = ({ row, values }) => {
     axios
-      .post(`http://${HOST}:8080/user/update/${row.original.username}`, values, {
+      .post(`http://${HOST}/user/update/${row.original.username}`, values, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
-        alert('User Updated');
-        axios.post(`${HOST}:8080/log/add`, {
+        alert("User Updated");
+        axios.post(`${HOST}/log/add`, {
           username: getAuthUser(),
-          action: 'Edit User',
-          comments: `User ${getAuthUser()} edited user ${values.username} from {username: ${row.original.username},
+          action: "Edit User",
+          comments: `User ${getAuthUser()} edited user ${
+            values.username
+          } from {username: ${row.original.username},
           name: ${row.original.name},
           email: ${row.original.email},
           phone: ${row.original.phone},
-          permission: ${row.original.permission}} to {username: ${values.username},
+          permission: ${row.original.permission}} to {username: ${
+            values.username
+          },
           name: ${values.name},
           email: ${values.email},
           phone: ${values.phone},
@@ -227,44 +243,40 @@ class Users extends Component {
 
   columns = [
     {
-      accessorKey: 'username',
-      header: 'Username',
-      muiTableHeadCellProps: { sx: { color: 'black' } },
+      accessorKey: "username",
+      header: "Username",
+      muiTableHeadCellProps: { sx: { color: "black" } },
       Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
     },
     {
-      accessorKey: 'name',
-      header: 'Name',
-      muiTableHeadCellProps: { sx: { color: 'black' } },
+      accessorKey: "name",
+      header: "Name",
+      muiTableHeadCellProps: { sx: { color: "black" } },
       Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
     },
     {
-      accessorKey: 'email',
-      header: 'Email',
-      muiTableHeadCellProps: { sx: { color: 'black' } },
+      accessorKey: "email",
+      header: "Email",
+      muiTableHeadCellProps: { sx: { color: "black" } },
       Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
     },
     {
-      accessorKey: 'phone',
-      header: 'Phone',
-      muiTableHeadCellProps: { sx: { color: 'black' } },
+      accessorKey: "phone",
+      header: "Phone",
+      muiTableHeadCellProps: { sx: { color: "black" } },
       Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
     },
     {
-      accessorKey: 'permission',
-      header: 'Permission',
-      muiTableHeadCellProps: { sx: { color: 'black' } },
-      Cell: ({ renderedCellValue }) => (
-        <strong>
-          {renderedCellValue}
-        </strong>
-      ),
+      accessorKey: "permission",
+      header: "Permission",
+      muiTableHeadCellProps: { sx: { color: "black" } },
+      Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
     },
   ];
 
   fetchData() {
     axios
-      .get(`http://${HOST}:8080/user`, {
+      .get(`http://${HOST}/user`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
@@ -289,7 +301,7 @@ class Users extends Component {
               enableEditing
               onEditingRowSave={this.handleUpdate}
               renderRowActions={({ row, table }) => (
-                <Box sx={{ display: 'flex', gap: '1rem' }}>
+                <Box sx={{ display: "flex", gap: "1rem" }}>
                   <Tooltip arrow placement="left" title="Edit">
                     <IconButton onClick={() => table.setEditingRow(row)}>
                       <Edit />
@@ -298,8 +310,7 @@ class Users extends Component {
                   <Tooltip arrow placement="right" title="Delete">
                     <IconButton
                       color="error"
-                      onClick={() => this.handleDelete(row.original.username)}
-                    >
+                      onClick={() => this.handleDelete(row.original.username)}>
                       <Delete />
                     </IconButton>
                   </Tooltip>
@@ -309,8 +320,7 @@ class Users extends Component {
                 <Button
                   color="secondary"
                   onClick={() => this.setState({ createModalOpen: true })}
-                  variant="contained"
-                >
+                  variant="contained">
                   Create New User
                 </Button>
               )}

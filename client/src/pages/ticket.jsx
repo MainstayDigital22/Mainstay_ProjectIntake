@@ -60,22 +60,22 @@ function withParams(Component) {
   return (props) => <Component {...props} params={useParams()} />;
 }
 class Ticket extends Component {
-  constructor(props){
+  constructor(props) {
     super(props);
     this.state = {
       actionLock: false,
-      errors:{},
-      category:1,
+      errors: {},
+      category: 1,
       brandingFiles: [],
       brandingDesignDocuments: [],
-      priority:'medium'
+      priority: "medium",
     };
   }
   validateForm = () => {
     const errors = {};
-    const requiredFields = ['title', 'domainURL']; // List of required field names
-    requiredFields.forEach(fieldName => {
-      if (!this.state[fieldName] || this.state[fieldName].trim() === '') {
+    const requiredFields = ["title", "domainURL"]; // List of required field names
+    requiredFields.forEach((fieldName) => {
+      if (!this.state[fieldName] || this.state[fieldName].trim() === "") {
         errors[fieldName] = `${fieldName} cannot be empty`; // Customize the error message as needed
       }
     });
@@ -84,44 +84,46 @@ class Ticket extends Component {
     return Object.keys(errors).length === 0; // Form is valid if there are no errors
   };
   handleChange = (event) => {
-  const { name, value } = event.target;
-  const nameParts = name.split('.'); 
-  if (nameParts.length > 1) {
-    this.setState((prevState) => {
-      let updatedState = { ...prevState };
-      let currentPart = updatedState;
+    const { name, value } = event.target;
+    const nameParts = name.split(".");
+    if (nameParts.length > 1) {
+      this.setState((prevState) => {
+        let updatedState = { ...prevState };
+        let currentPart = updatedState;
 
-      for (let i = 0; i < nameParts.length - 1; i++) {
-        if (!currentPart[nameParts[i]]) {
-          currentPart[nameParts[i]] = {};
+        for (let i = 0; i < nameParts.length - 1; i++) {
+          if (!currentPart[nameParts[i]]) {
+            currentPart[nameParts[i]] = {};
+          }
+          currentPart = currentPart[nameParts[i]];
         }
-        currentPart = currentPart[nameParts[i]];
-      }
-      currentPart[nameParts[nameParts.length - 1]] = value;
+        currentPart[nameParts[nameParts.length - 1]] = value;
 
-      return updatedState;
-    });
-  } else {
-    this.setState({ [name]: value });
-  }
-};
+        return updatedState;
+      });
+    } else {
+      this.setState({ [name]: value });
+    }
+  };
 
   componentDidMount() {
     const { id } = this.props.params;
-    if(id){this.fetchData(id);}
+    if (id) {
+      this.fetchData(id);
+    }
   }
   async fetchData(id) {
     this.setState({
       id: id,
     });
     await axios
-      .get(`${HOST}:8080/ticket/${id}`, {
+      .get(`${HOST}/ticket/${id}`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
         this.setState((prevState) => ({
-            ...prevState,
-            ...res.data[0]
+          ...prevState,
+          ...res.data[0],
         }));
       })
       .catch((err) => {
@@ -166,9 +168,9 @@ class Ticket extends Component {
     if (this.state.actionLock) {
       return;
     }
-    if(!this.validateForm()){
-      alert('Please fill out all required fields')
-      return
+    if (!this.validateForm()) {
+      alert("Please fill out all required fields");
+      return;
     }
     this.setState({
       actionLock: true,
@@ -182,7 +184,7 @@ class Ticket extends Component {
     }
 
     axios
-      .post(`${HOST}:8080/file/upload`, formData, {
+      .post(`${HOST}/file/upload`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -190,7 +192,9 @@ class Ticket extends Component {
       .then((res) => {
         axios
           .post(
-            `${HOST}:8080/ticket/${this.state._id?`update/${this.state._id}`:'add'}`,
+            `${HOST}/ticket/${
+              this.state._id ? `update/${this.state._id}` : "add"
+            }`,
             {
               username: getAuthUser(),
               category: this.state.category,
@@ -198,21 +202,35 @@ class Ticket extends Component {
               title: this.state.title,
               priority: this.state.priority,
               branding: {
-                files: (this.state._id&&this.state.branding?.files)?this.state.branding.files.concat(res.data.slice(0, this.state.brandingFiles.length)):this.state.brandingFiles.length!=0?res.data.slice(0, this.state.brandingFiles.length):undefined,
+                files:
+                  this.state._id && this.state.branding?.files
+                    ? this.state.branding.files.concat(
+                        res.data.slice(0, this.state.brandingFiles.length)
+                      )
+                    : this.state.brandingFiles.length != 0
+                    ? res.data.slice(0, this.state.brandingFiles.length)
+                    : undefined,
                 colorCodes: this.state.branding?.colorCodes,
                 fonts: this.state.branding?.fonts,
-                designDocument: (this.state._id&&this.state.branding?.files)?this.state.branding.designDocument.concat(res.data.slice(
-                  this.state.brandingFiles.length,
-                  this.state.brandingFiles.length +
-                    this.state.brandingDesignDocuments.length
-                )):this.state.brandingDesignDocuments.length!=0?res.data.slice(
-                  this.state.brandingFiles.length,
-                  this.state.brandingFiles.length +
-                    this.state.brandingDesignDocuments.length
-                ):undefined,
+                designDocument:
+                  this.state._id && this.state.branding?.files
+                    ? this.state.branding.designDocument.concat(
+                        res.data.slice(
+                          this.state.brandingFiles.length,
+                          this.state.brandingFiles.length +
+                            this.state.brandingDesignDocuments.length
+                        )
+                      )
+                    : this.state.brandingDesignDocuments.length != 0
+                    ? res.data.slice(
+                        this.state.brandingFiles.length,
+                        this.state.brandingFiles.length +
+                          this.state.brandingDesignDocuments.length
+                      )
+                    : undefined,
               },
               hosting: this.state.hosting,
-              FTP:this.state.FTP,
+              FTP: this.state.FTP,
               controlPanel: this.state.controlPanel,
               domain: this.state.domain,
               SEOKeywords: this.state.seoKeywords,
@@ -223,12 +241,15 @@ class Ticket extends Component {
           .then((res) => {
             this.setState({ actionLock: false });
             if (res.status == 200) {
-              alert(this.state._id?"Ticket Edited!":"Ticket Created!");
-              window.location.href = `/review/${this.state._id||res.data.id}`;
+              alert(this.state._id ? "Ticket Edited!" : "Ticket Created!");
+              window.location.href = `/review/${this.state._id || res.data.id}`;
             }
           });
       })
-      .catch((err) => {alert(err);this.setState({ actionLock: false });});
+      .catch((err) => {
+        alert(err);
+        this.setState({ actionLock: false });
+      });
   };
   render() {
     return (
@@ -243,7 +264,9 @@ class Ticket extends Component {
                   type="text"
                   name="title"
                   defaultValue={this.state.title}
-                  className={`form-control ${this.state.errors.title && "error"}`}
+                  className={`form-control ${
+                    this.state.errors.title && "error"
+                  }`}
                   placeholder=""
                   onChange={this.handleChange}
                 />
@@ -252,7 +275,9 @@ class Ticket extends Component {
                   type="text"
                   name="domainURL"
                   defaultValue={this.state.domainURL}
-                  className={`form-control ${this.state.errors.domainURL && "error"}`}
+                  className={`form-control ${
+                    this.state.errors.domainURL && "error"
+                  }`}
                   placeholder=""
                   onChange={this.handleChange}
                 />
@@ -263,11 +288,23 @@ class Ticket extends Component {
                       name="category"
                       onChange={this.handleChange}
                       className="form-control">
-                      <option value={1} selected={![2,3,4,5].includes(this.state.category)}>PBC</option>
-                      <option value={2} selected={this.state.category==2}>SEO</option>
-                      <option value={3} selected={this.state.category==3}>Web Maintenance and Governance</option>
-                      <option value={4} selected={this.state.category==4}>New Website Build</option>
-                      <option value={5} selected={this.state.category==5}>New App Build</option>
+                      <option
+                        value={1}
+                        selected={![2, 3, 4, 5].includes(this.state.category)}>
+                        PBC
+                      </option>
+                      <option value={2} selected={this.state.category == 2}>
+                        SEO
+                      </option>
+                      <option value={3} selected={this.state.category == 3}>
+                        Web Maintenance and Governance
+                      </option>
+                      <option value={4} selected={this.state.category == 4}>
+                        New Website Build
+                      </option>
+                      <option value={5} selected={this.state.category == 5}>
+                        New App Build
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -280,10 +317,28 @@ class Ticket extends Component {
                       defaultValue={this.state.priority}
                       onChange={this.handleChange}
                       className="form-control">
-                      <option value="ASAP" selected={this.state.category=="ASAP"}>ASAP</option>
-                      <option value="high" selected={this.state.category=="high"}>High</option>
-                      <option value="medium" selected={!['ASAP','low','high'].includes(this.state.priority)}>Medium</option>
-                      <option value="low" selected={this.state.category=='low'}>Low</option>
+                      <option
+                        value="ASAP"
+                        selected={this.state.category == "ASAP"}>
+                        ASAP
+                      </option>
+                      <option
+                        value="high"
+                        selected={this.state.category == "high"}>
+                        High
+                      </option>
+                      <option
+                        value="medium"
+                        selected={
+                          !["ASAP", "low", "high"].includes(this.state.priority)
+                        }>
+                        Medium
+                      </option>
+                      <option
+                        value="low"
+                        selected={this.state.category == "low"}>
+                        Low
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -642,7 +697,7 @@ class Ticket extends Component {
                     id="submit"
                     onClick={this.submit}
                     className="btn-main"
-                    value={this.state._id?"Edit Ticket":"Create Ticket"}
+                    value={this.state._id ? "Edit Ticket" : "Create Ticket"}
                   />
                 </div>
               </form>
