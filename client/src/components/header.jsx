@@ -27,7 +27,7 @@ class Header extends Component {
             confirm(`The Session will expire in 5 minutes,\nContinue session?`)
           ) {
             axios.post(
-              `http://${HOST}:8080/user/refresh`,
+              `${HOST}:8080/user/refresh`,
               {
                 username: getAuthUser(),
               },
