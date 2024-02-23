@@ -157,11 +157,11 @@ class Users extends Component {
     }
 
     axios
-      .delete(`http://${HOST}:8080/user/${username}`, {
+      .delete(`${HOST}:8080/user/${username}`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
-        axios.post(`http://${HOST}:8080/log/add`, {
+        axios.post(`${HOST}:8080/log/add`, {
           username: getAuthUser(),
           action: 'Delete User',
           comments: `User ${getAuthUser()} deleted user ${username}`,
@@ -181,11 +181,11 @@ class Users extends Component {
 
   handleCreate = (values) => {
     axios
-      .post(`http://${HOST}:8080/user/add`, values, {
+      .post(`${HOST}:8080/user/add`, values, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
-        axios.post(`http://${HOST}:8080/log/add`, {
+        axios.post(`${HOST}:8080/log/add`, {
           username: getAuthUser(),
           action: 'Create User',
           comments: `User ${getAuthUser()} created user ${values.username} {username: ${values.username},
@@ -207,7 +207,7 @@ class Users extends Component {
       })
       .then((res) => {
         alert('User Updated');
-        axios.post(`http://${HOST}:8080/log/add`, {
+        axios.post(`${HOST}:8080/log/add`, {
           username: getAuthUser(),
           action: 'Edit User',
           comments: `User ${getAuthUser()} edited user ${values.username} from {username: ${row.original.username},
