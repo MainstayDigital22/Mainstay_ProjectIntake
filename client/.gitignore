@@ -4,13 +4,13 @@
 /node_modules
 /.pnp
 .pnp.js
-
+src/const.jsx
 # testing
 /coverage
-
+src/const.jsx
 # production
 /build
-
+src/const.jsx
 # misc
 .DS_Store
 src/const.jsx
