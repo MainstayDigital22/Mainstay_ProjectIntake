@@ -152,7 +152,7 @@ class Details extends Component {
         {this.state.ticket ? (
           <>
             {this.state.ticket[0].username === getAuthUser() ||
-            getAuthLevel() <= 1 ? (
+            getAuthLevel() == "admin" ? (
               <div className="container">
                 <div className="row mt-md-5 pt-md-4">
                   <ul>
