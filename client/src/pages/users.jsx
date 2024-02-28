@@ -170,15 +170,6 @@ class Users extends Component {
       .delete(`${HOST}/user/${username}`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
-      .then((res) => {
-        axios.post(`${HOST}/log/add`, {
-          username: getAuthUser(),
-          action: "Delete User",
-          comments: `User ${getAuthUser()} deleted user ${username}`,
-        });
-        alert("User deleted");
-        window.location.reload(false);
-      })
       .catch((err) => alert(err.response.data));
   };
 
