@@ -112,13 +112,19 @@ export default class OnBoard extends Component {
       formData.append("files", this.state.legalDocuments[i]);
     }
     if (this.state.username == "__new_user") {
-      let req = await axios.post(`${HOST}/user/signup`, {
-        username: this.state.newusername,
-        name: this.state.name,
-        password: this.state.password,
-        email: this.state.email,
-        phone: this.state.phone,
-      });
+      let req = await axios
+        .post(`${HOST}/user/signup`, {
+          username: this.state.newusername,
+          firstName: this.state.firstName,
+          lastName: this.state.lastName,
+          password: this.state.password,
+          email: this.state.email,
+          phone: this.state.phone,
+        })
+        .catch((err) => {
+          alert(err.response.data);
+          this.setState({ actionLock: false });
+        });
       if (req.status == 200) {
         this.setState({ username: this.state.newusername });
       } else {
@@ -200,7 +206,7 @@ export default class OnBoard extends Component {
                   {this.state.username == "__new_user" && (
                     <>
                       <div className="row">
-                        <div className="col-6">
+                        <div className="col-4">
                           <h5>Username</h5>
                           <input
                             type="text"
@@ -212,11 +218,23 @@ export default class OnBoard extends Component {
                             onChange={this.handleChange}
                           />
                         </div>
-                        <div className="col-6">
-                          <h5>Name</h5>
+                        <div className="col-4">
+                          <h5>First Name</h5>
                           <input
                             type="text"
-                            name="name"
+                            name="firstName"
+                            className={`form-control ${
+                              this.state.nameError && "error"
+                            }`}
+                            placeholder=""
+                            onChange={this.handleChange}
+                          />
+                        </div>
+                        <div className="col-4">
+                          <h5>Last Name</h5>
+                          <input
+                            type="text"
+                            name="lastName"
                             className={`form-control ${
                               this.state.nameError && "error"
                             }`}

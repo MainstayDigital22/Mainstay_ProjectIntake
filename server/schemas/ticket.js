@@ -15,8 +15,14 @@ const ticketSchema = new Schema({
   status: {
     type: String,
     required: true,
-    enum: ["open", "closed", "archived"],
-    default: "open",
+    enum: [
+      "new",
+      "completed",
+      "archived",
+      "pending review",
+      "pending response",
+    ],
+    default: "new",
   },
   branding: {
     files: [String], //array of media urls
@@ -58,6 +64,15 @@ const ticketSchema = new Schema({
       password: { type: String, required: true },
     },
     required: false,
+  },
+  chat: {
+    type: [
+      {
+        isClient: { type: Boolean, required: true },
+        message: { type: String, required: true },
+        username: { type: String, required: true },
+      },
+    ],
   },
   SEOKeywords: String,
   comments: String, //anything additional

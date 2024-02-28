@@ -112,7 +112,7 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
                     }>
                     <MenuItem value={"admin"}>Admin</MenuItem>
                     <MenuItem value={"staff"}>Staff</MenuItem>
-                    <MenuItem value={"user"}>User</MenuItem>
+                    <MenuItem value={"client"}>client</MenuItem>
                   </Select>
                 </FormControl>
               )
@@ -170,6 +170,10 @@ class Users extends Component {
       .delete(`${HOST}/user/${username}`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
+      .then((res) => {
+        alert(res.data);
+        window.location.reload(false);
+      })
       .catch((err) => alert(err.response.data));
   };
 
@@ -212,8 +216,14 @@ class Users extends Component {
       Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
     },
     {
-      accessorKey: "name",
-      header: "Name",
+      accessorKey: "firstName",
+      header: "First Name",
+      muiTableHeadCellProps: { sx: { color: "black" } },
+      Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
+    },
+    {
+      accessorKey: "lastName",
+      header: "Last Name",
       muiTableHeadCellProps: { sx: { color: "black" } },
       Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
     },

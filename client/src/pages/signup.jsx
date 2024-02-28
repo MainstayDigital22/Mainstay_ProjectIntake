@@ -7,7 +7,8 @@ import building from "../assets/building.jpg";
 import "bootstrap/dist/css/bootstrap.min.css";
 const SignUp = () => {
   const [username, setUsername] = useState("");
-  const [fullname, setFullname] = useState("");
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [email, setEmail] = useState("");
@@ -22,7 +23,8 @@ const SignUp = () => {
     axios
       .post(`${HOST}/user/signup`, {
         username,
-        name: fullname,
+        firstName: firstname,
+        lastName: lastname,
         password,
         email,
         phone,
@@ -68,11 +70,18 @@ const SignUp = () => {
               value={username}
             />
 
-            <label>Full Name:</label>
+            <label>First Name:</label>
             <input
               type="text"
-              onChange={(e) => setFullname(e.target.value)}
-              value={fullname}
+              onChange={(e) => setFirstname(e.target.value)}
+              value={firstname}
+            />
+
+            <label>Last Name:</label>
+            <input
+              type="text"
+              onChange={(e) => setLastname(e.target.value)}
+              value={lastname}
             />
 
             <label>Password:</label>

@@ -18,7 +18,7 @@ router.route("/").get(async function (req, res) {
     .catch((err) => res.status(400).json("Error: " + err));
 });
 router.route("/add").post(async function (req, res) {
-  if ((await auth(req, ['admin'])) !== 1) {
+  if ((await auth(req, ["admin"])) !== 1) {
     res.status(403).json("Auth Error");
     return;
   }
@@ -32,7 +32,8 @@ router.route("/add").post(async function (req, res) {
   const newUser = new User({
     username: req.body.username,
     password: hashedPassword,
-    name: req.body.name,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
     email: req.body.email,
     phone: req.body.phone,
     permission: req.body.permission,
@@ -54,7 +55,8 @@ router.route("/signup").post(async function (req, res) {
   const newUser = new User({
     username: req.body.username,
     password: hashedPassword,
-    name: req.body.name,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
     email: req.body.email,
     phone: req.body.phone,
   });
@@ -77,7 +79,7 @@ router.route("/:username").delete((req, res) => {
 });
 
 router.route("/update/:username").post(async (req, res) => {
-  if ((await auth(req, ['admin'])) !== 1) {
+  if ((await auth(req, ["admin"])) !== 1) {
     res.status(403).json("Auth Error");
     return;
   }
@@ -98,7 +100,8 @@ router.route("/update/:username").post(async (req, res) => {
         {
           username: req.body.username || user.username,
           password: hashedPassword || user.password,
-          name: req.body.name || user.name,
+          firstName: req.body.firstName || user.firstName,
+          lastName: req.body.lastName || user.lastName,
           email: req.body.email || user.email,
           phone: req.body.phone || user.phone,
           permission: req.body.permission || user.permission,
@@ -110,39 +113,37 @@ router.route("/update/:username").post(async (req, res) => {
         .catch((err) => res.status(400).json("Error: " + err));
     })
     .catch((err) => res.status(400).json(err));
-});+
-
-router.route("/onboard").post(async (req, res) => {
+});
++router.route("/onboard").post(async (req, res) => {
   const exists = await User.findOne({ username: req.body.username });
   if (!exists) {
     res.status(400).json("User not found");
     return;
   }
-  console.log(req.body.companyName)
-      User.findOneAndUpdate(
-        { username: req.body.username },
-        Object.entries({
-          companyName: req.body.companyName,
-  companyWebsite: req.body.companyWebsite,
-  contactEmail: req.body.contactEmail,
-  socials: req.body.socials,
-  contactName: req.body.contactName,
-  legalDocuments: req.body.legalDocuments,
-  comments:req.body.comments,
-  onboard:true,
-          updated: Date.now(),
-        }).reduce((acc, [key, value]) => {
-          if (value !== undefined) {
-            acc[key] = value;
-          }
-          return acc;
-        }, {}),
-        {new:true}
-      )
-        .then(() => res.json("User updated!"))
-        .catch((err) => res.status(400).json("Error: " + err));
+  console.log(req.body.companyName);
+  User.findOneAndUpdate(
+    { username: req.body.username },
+    Object.entries({
+      companyName: req.body.companyName,
+      companyWebsite: req.body.companyWebsite,
+      contactEmail: req.body.contactEmail,
+      socials: req.body.socials,
+      contactName: req.body.contactName,
+      legalDocuments: req.body.legalDocuments,
+      comments: req.body.comments,
+      onboard: true,
+      updated: Date.now(),
+    }).reduce((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {}),
+    { new: true }
+  )
+    .then(() => res.json("User updated!"))
+    .catch((err) => res.status(400).json("Error: " + err));
 });
-
 
 router.route("/login").post(async function (req, res) {
   const user = await User.findOne({ username: req.body.username });
@@ -169,7 +170,7 @@ router.route("/login").post(async function (req, res) {
   }
 });
 router.route("/refresh").post(async function (req, res) {
-  if ((await auth(req, ['admin','staff','client'])) !== 1) {
+  if ((await auth(req, ["admin", "staff", "client"])) !== 1) {
     res.status(403).json("Auth Error");
     return;
   }

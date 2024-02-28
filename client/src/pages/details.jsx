@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
 import { getAuthLevel, getAuthToken, getAuthUser } from "../components/auth";
 import { HOST } from "../const";
+import { Chat } from "../components/chat";
 function withParams(Component) {
   return (props) => <Component {...props} params={useParams()} />;
 }
@@ -33,6 +34,9 @@ class Details extends Component {
       ticket: undefined,
       id: "",
       actionLock: false,
+      chat: [],
+      chatInput: "",
+      isSendingChat: false,
     };
   }
   async fetchData(id) {
@@ -44,8 +48,23 @@ class Details extends Component {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
+        const isClientView = getAuthLevel() === "client";
+        if (res.data[0].chat) {
+          const newChats = res.data[0].chat.map((msg) => ({
+            position: isClientView === msg.isClient ? "right" : "left",
+            type: "text",
+            title: msg.username,
+            text: msg.message,
+          }));
+
+          this.setState((prevState) => ({
+            chat: newChats,
+          }));
+        }
+
         this.setState({
           ticket: res.data,
+          chatraw: res.data[0].chat,
         });
       })
       .catch((err) => {
@@ -56,6 +75,69 @@ class Details extends Component {
     const { id } = this.props.params;
     this.fetchData(id);
   }
+  handleInput = (input) => {
+    this.setState({ chatInput: input });
+  };
+  addChat = async (text) => {
+    if (this.state.isSendingChat || !text.trim()) return;
+    const newChatMessage = {
+      isClient: getAuthLevel() === "client",
+      message: text,
+      username: getAuthUser(),
+    };
+
+    const optimisticUpdate = {
+      position: "right",
+      type: "text",
+      title: getAuthUser(),
+      text,
+    };
+
+    this.setState((prevState) => ({
+      chat: [...prevState.chat, optimisticUpdate],
+      isSendingChat: true,
+      chatInput: "", // Clear input for immediate feedback
+    }));
+
+    try {
+      const response = await axios.post(
+        `${HOST}/ticket/update/${this.state.id}`,
+        {
+          chat: [...this.state.ticket[0].chat, newChatMessage],
+          status:
+            getAuthLevel() === "client" ? "pending review" : "pending response",
+        },
+        { headers: { Authorization: `Bearer ${getAuthToken()}` } }
+      );
+
+      if (response.status == 200) {
+        await axios
+          .get(`${HOST}/ticket/${this.state.id}`, {
+            headers: { Authorization: `Bearer ${getAuthToken()}` },
+          })
+          .then((res) => {
+            this.setState({
+              ticket: [res.data[0]],
+              chat: res.data[0].chat.map((msg) => ({
+                position:
+                  (getAuthLevel() === "client") === msg.isClient
+                    ? "right"
+                    : "left",
+                type: "text",
+                title: msg.username,
+                text: msg.message,
+              })),
+            });
+          });
+      }
+    } catch (err) {
+      console.error(err.response || err);
+      // Handle error (e.g., rollback optimistic update, show error message)
+    } finally {
+      this.setState({ isSendingChat: false });
+    }
+  };
+
   archive = () => {
     if (this.state.actionLock) {
       return;
@@ -88,7 +170,14 @@ class Details extends Component {
     axios
       .post(
         `${HOST}/ticket/update/${this.state.id}`,
-        { status: "open" },
+        {
+          status: !this.state.ticket[0]?.chat[0]
+            ? "new"
+            : this.state.ticket[0].chat[this.state.ticket[0].chat.length - 1]
+                .isClient
+            ? "pending review"
+            : "pending response",
+        },
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
       .then((res) => {
@@ -110,7 +199,7 @@ class Details extends Component {
     axios
       .post(
         `${HOST}/ticket/update/${this.state.id}`,
-        { status: "close" },
+        { status: "closed" },
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
       .then((res) => {
@@ -123,6 +212,9 @@ class Details extends Component {
       });
   };
   delete = () => {
+    if (!window.confirm(`Are you sure you want to delete this ticket?`)) {
+      return;
+    }
     if (this.state.actionLock) {
       return;
     }
@@ -152,11 +244,14 @@ class Details extends Component {
         {this.state.ticket ? (
           <>
             {this.state.ticket[0].username === getAuthUser() ||
-            getAuthLevel() == "admin" ? (
+            ["admin", "staff"].includes(getAuthLevel()) ? (
               <div className="container">
                 <div className="row mt-md-5 pt-md-4">
                   <ul>
                     {Object.keys(this.state.ticket[0]).map((key) => {
+                      if (key == "chat") {
+                        return;
+                      }
                       if (
                         this.state.ticket[0][key] &&
                         typeof this.state.ticket[0][key] === "object" &&
@@ -200,7 +295,9 @@ class Details extends Component {
                 <div className="row">
                   {["admin", "staff"].includes(getAuthLevel()) ? (
                     <>
-                      {this.state.ticket[0].status != "open" ? (
+                      {["closed", "archived"].includes(
+                        this.state.ticket[0].status
+                      ) ? (
                         <input
                           type="button"
                           id="submit"
@@ -211,7 +308,7 @@ class Details extends Component {
                       ) : (
                         <></>
                       )}
-                      {this.state.ticket[0].status != "close" ? (
+                      {this.state.ticket[0].status != "closed" ? (
                         <input
                           type="button"
                           id="submit"
@@ -255,6 +352,43 @@ class Details extends Component {
                   ) : (
                     <></>
                   )}
+                </div>
+                <Chat messages={this.state.chat} />
+                <div className="row">
+                  <div className="col-8">
+                    <input
+                      type="text"
+                      value={this.state.chatInput || ""}
+                      disabled={this.state.ticket[0].status === "closed"}
+                      onChange={(e) => this.handleInput(e.target.value)}
+                      placeholder={
+                        this.state.ticket[0].status === "closed"
+                          ? "Ticket is closed"
+                          : "Text Something..."
+                      }
+                      style={{
+                        width: "100%",
+                        height: "50px",
+                        fontSize: "20px",
+                        bottom: 0,
+                        padding: "10px",
+                      }}
+                    />
+                  </div>
+                  <div className="col-4">
+                    <button
+                      onClick={() => this.addChat(this.state.chatInput)}
+                      disabled={this.state.isSendingChat} // Disable button while sending
+                      className="btn-action"
+                      style={{
+                        width: "100%",
+                        height: "50px",
+                        fontSize: "20px",
+                        padding: "10px",
+                      }}>
+                      Send
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (

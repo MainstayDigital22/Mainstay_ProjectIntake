@@ -13,7 +13,9 @@ class Review extends Component {
       tagFilter: [],
       tagInput: [],
       posts: [],
-      status: "open",
+      showOpen: true,
+      showClosed: false,
+      showArchived: false,
       height: 0,
       toggleList: true,
     };
@@ -109,7 +111,7 @@ class Review extends Component {
     }
   }
   handleDelete = (id) => {
-    if (!window.confirm(`Delete this ticket?`)) {
+    if (!window.confirm(`Are you sure you want to delete this ticket?`)) {
       return;
     }
 
@@ -124,10 +126,19 @@ class Review extends Component {
       .catch((err) => alert(err.response.data));
   };
   async updatePosts() {
+    const filters = [];
+    if (this.state.showOpen)
+      filters.push("pending response", "new", "pending review");
+    if (this.state.showClosed) filters.push("closed");
+    if (this.state.showArchived) filters.push("archived");
+
     await axios
       .post(
         `${HOST}/ticket`,
-        { user: getAuthUser(), status: this.state.status },
+        {
+          username: getAuthUser(),
+          status: filters,
+        },
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
       .then((res) => {
@@ -152,6 +163,43 @@ class Review extends Component {
       <div className="container">
         {this.state.posts ? (
           <div>
+            <div className="mb-2">
+              <button
+                className={
+                  this.state.showOpen ? "button-active" : "button-inactive"
+                }
+                onClick={() => {
+                  this.setState({ showOpen: !this.state.showOpen }, () =>
+                    this.updatePosts()
+                  );
+                }}>
+                Active Tickets
+              </button>
+              <button
+                className={
+                  this.state.showClosed ? "button-active" : "button-inactive"
+                }
+                onClick={() => {
+                  this.setState({ showClosed: !this.state.showClosed }, () =>
+                    this.updatePosts()
+                  );
+                }}>
+                Closed Tickets
+              </button>
+              <button
+                className={
+                  this.state.showArchived ? "button-active" : "button-inactive"
+                }
+                onClick={() => {
+                  this.setState(
+                    { showArchived: !this.state.showArchived },
+                    () => this.updatePosts()
+                  );
+                }}>
+                Archived Tickets
+              </button>
+            </div>
+
             <MaterialReactTable
               columns={this.columns}
               data={this.state.posts}

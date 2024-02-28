@@ -14,14 +14,14 @@ router.route("/").post(async (req, res) => {
       query = { status: req.body.status };
     }
   } else {
-    query.username = req.body.user;
+    query.username = req.body.username;
     if (req.body.status) {
       query.status = req.body.status;
     }
   }
   Ticket.find(query)
-    .then(tickets => res.json(tickets))
-    .catch(err => res.status(400).json("Error: " + err));
+    .then((tickets) => res.json(tickets))
+    .catch((err) => res.status(400).json("Error: " + err));
 });
 router.route("/add").post(async (req, res) => {
   if ((await auth(req, ["admin", "staff", "client"])) !== 1) {
@@ -49,7 +49,7 @@ router.route("/add").post(async (req, res) => {
     .catch((err) => res.status(400).json("Error: " + err));
 });
 router.route("/:_id").delete(async (req, res) => {
-  if ((await auth(req, ['admin'])) !== 1) {
+  if ((await auth(req, ["admin"])) !== 1) {
     res.status(403).json("Auth Error");
     return;
   }
@@ -59,7 +59,7 @@ router.route("/:_id").delete(async (req, res) => {
       return;
     }
     let media = ticket[0].branding.files || [];
-    console.log(media)
+    console.log(media);
     for (let i = 0; i < media.length; i += 1) {
       deleteFile(media[i].split("/")[media[i].split("/").length - 1]);
     }
@@ -78,30 +78,44 @@ router.route("/:_id").get(async (req, res) => {
     .catch((err) => res.status(400).json("Error: " + err));
 });
 
-router.route('/update/:id').post(async (req, res) => {
-  if ((await auth(req, ['admin', 'staff', 'client'])) !== 1) {
-    res.status(403).json('Auth Error');
+router.route("/update/:id").post(async (req, res) => {
+  if ((await auth(req, ["admin", "staff", "client"])) !== 1) {
+    res.status(403).json("Auth Error");
     return;
   }
 
   const updateData = {};
-  const fieldsToUpdate = ['username', 'category', 'title', 'priority', 'domainURL', 'branding', 'hosting', 'FTP', 'controlPanel', 'domain', 'SEOKeywords', 'comments', 'status'];
+  const fieldsToUpdate = [
+    "username",
+    "category",
+    "title",
+    "priority",
+    "domainURL",
+    "branding",
+    "hosting",
+    "FTP",
+    "controlPanel",
+    "domain",
+    "SEOKeywords",
+    "comments",
+    "status",
+    "chat",
+  ];
 
-  fieldsToUpdate.forEach(field => {
+  fieldsToUpdate.forEach((field) => {
     if (req.body[field] !== undefined) {
       updateData[field] = req.body[field];
     }
   });
 
   Ticket.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true })
-    .then(updatedTicket => {
+    .then((updatedTicket) => {
       if (!updatedTicket) {
-        return res.status(404).json('Ticket not found.');
+        return res.status(404).json("Ticket not found.");
       }
-      res.json({ id: updatedTicket._id, message: 'Ticket Updated!' });
+      res.json({ id: updatedTicket._id, message: "Ticket Updated!" });
     })
-    .catch(err => res.status(400).json('Error: ' + err));
+    .catch((err) => res.status(400).json("Error: " + err));
 });
-
 
 module.exports = router;
