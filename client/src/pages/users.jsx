@@ -186,17 +186,6 @@ class Users extends Component {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
-        axios.post(`${HOST}/log/add`, {
-          username: getAuthUser(),
-          action: "Create User",
-          comments: `User ${getAuthUser()} created user ${
-            values.username
-          } {username: ${values.username},
-            name: ${values.name},
-            email: ${values.email},
-            phone: ${values.phone},
-            permission: ${values.permission}}`,
-        });
         alert("User Created");
         window.location.reload(false);
       })
@@ -205,28 +194,11 @@ class Users extends Component {
 
   handleUpdate = ({ row, values }) => {
     axios
-      .post(`http://${HOST}/user/update/${row.original.username}`, values, {
+      .post(`${HOST}/user/update/${row.original.username}`, values, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
         alert("User Updated");
-        axios.post(`${HOST}/log/add`, {
-          username: getAuthUser(),
-          action: "Edit User",
-          comments: `User ${getAuthUser()} edited user ${
-            values.username
-          } from {username: ${row.original.username},
-          name: ${row.original.name},
-          email: ${row.original.email},
-          phone: ${row.original.phone},
-          permission: ${row.original.permission}} to {username: ${
-            values.username
-          },
-          name: ${values.name},
-          email: ${values.email},
-          phone: ${values.phone},
-          permission: ${values.permission}}`,
-        });
         window.location.reload(false);
       })
       .catch((err) => alert(err.response.data));
@@ -267,7 +239,7 @@ class Users extends Component {
 
   fetchData() {
     axios
-      .get(`http://${HOST}/user`, {
+      .get(`${HOST}/user`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
