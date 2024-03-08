@@ -1,98 +1,135 @@
+import React, { Component } from "react";
+import { textLogo, homeIcon } from "../assets";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
-import React, { Component } from "react";
 import { getAuthLevel, getAuthToken, getAuthUser } from "../components/auth";
 import { HOST } from "../const";
 
-class Header extends Component {
+const navLinks = [
+  { href: "/", text: "Home", icon: homeIcon },
+  { href: "/review", text: "Review", icon: homeIcon },
+  { href: "/onboard", text: "Onboard", icon: homeIcon },
+  { href: "/new-ticket", text: "New Ticket", icon: homeIcon },
+  ...(getAuthLevel() === "admin"
+    ? [{ href: "/users", text: "Users", icon: homeIcon }]
+    : []),
+];
+
+const navLinks2 = [];
+
+class HeaderWrapper extends Component {
   logout = () => {
     localStorage.removeItem("user");
     window.location.replace("/login");
   };
+
   componentDidMount() {
+    const ignoredPaths = ["/403", "/login", "/signup"];
+    if (ignoredPaths.includes(window.location.pathname)) {
+      return;
+    }
     let isPaused = false;
     this.interval = setInterval(() => {
-      const storage = JSON.parse(localStorage.getItem("user"));
-      let expireTime = jwt_decode(storage.token).exp;
-      //console.log(expireTime)
-      //console.log(Date.now())
-      if (expireTime * 1000 < Date.now()) {
-        this.logout();
-        isPaused = true;
-      }
-      if (!isPaused) {
-        if (expireTime * 1000 < Date.now() + 5 * 60000) {
+      const storage = localStorage.getItem("user")
+        ? JSON.parse(localStorage.getItem("user"))
+        : null;
+      if (storage) {
+        let expireTime = jwt_decode(storage.token).exp;
+        if (expireTime * 1000 < Date.now()) {
+          this.logout();
+          isPaused = true;
+        }
+        if (!isPaused && expireTime * 1000 < Date.now() + 5 * 60000) {
           isPaused = true;
           if (
-            confirm(`The Session will expire in 5 minutes,\nContinue session?`)
+            window.confirm(
+              `The Session will expire in 5 minutes,\nContinue session?`
+            )
           ) {
-            axios.post(
-              `${HOST}:8080/user/refresh`,
-              {
-                username: getAuthUser(),
-              },
-              { headers: { Authorization: `Bearer ${getAuthToken()}` } }
-            ).then(async ()=>{
-              const user = await JSON.stringify(res.data);
-          await localStorage.setItem("user", user);
-            });
+            axios
+              .post(
+                `${HOST}:8080/user/refresh`,
+                { username: getAuthUser() },
+                { headers: { Authorization: `Bearer ${getAuthToken()}` } }
+              )
+              .then((res) => {
+                const user = JSON.stringify(res.data);
+                localStorage.setItem("user", user);
+              })
+              .catch((error) => {
+                console.error("Session refresh failed:", error);
+                //this.logout();
+              });
           } else {
-            this.logout();
+            //this.logout();
           }
         }
       }
     }, 1000);
   }
+
   componentWillUnmount() {
     clearInterval(this.interval);
   }
+
   render() {
     return (
-      <header id="myHeader" className="navbar bg-white position-sticky">
-        <div className="container">
-          <div className="row w-100-nav ">
-            <div className="">
-              <div className="navbar-item">
-                <div>
-                  <div
-                    className="dropdown-custom  btn"
-                    onClick={() => window.open(`/`, "_self")}>
-                    Home
-                  </div>
-                  <div
-                    className="dropdown-custom  btn"
-                    onClick={() => window.open(`/review`, "_self")}>
-                    Review
-                  </div>
-                  <div
-                    className="dropdown-custom  btn"
-                    onClick={() => window.open(`/onboard`, "_self")}>
-                    Onboard
-                  </div>
-                  <div
-                    className="dropdown-custom  btn"
-                    onClick={() => window.open(`/new-ticket`, "_self")}>
-                    New Ticket
-                  </div>
-                  {getAuthLevel() == "admin" ? (
-                    <div
-                      className="dropdown-custom  btn"
-                      onClick={() => window.open(`/users`, "_self")}>
-                      Users
+      <div className="row">
+        <div id="myHeader" className="col nav-container">
+          <div className="vertical-header">
+            <div className="vertical-flex">
+              <img src={textLogo} alt="Text Logo"></img>
+              <div className="navmenu">
+                <h4>Dashboard</h4>
+                <div className="navlinks">
+                  {navLinks.map((link, index) => (
+                    <a key={index} href={link.href}>
+                      <div className="row">
+                        {link.icon && (
+                          <div className="icon">
+                            <img src={link.icon} alt={`${link.text} Icon`} />
+                          </div>
+                        )}
+                        <p className="col">{link.text}</p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+              <div className="navmenu">
+                <h4>Account</h4>
+                <div className="navlinks">
+                  {navLinks2.map((link, index) => (
+                    <a key={index} href={link.href}>
+                      <div className="row">
+                        {link.icon && (
+                          <div className="icon">
+                            <img src={link.icon} alt={`${link.text} Icon`} />
+                          </div>
+                        )}
+                        <p className="col">{link.text}</p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+              <div className="navmenu navend">
+                <div className="navlinks">
+                  <div onClick={this.logout} className="row">
+                    <div className="icon">
+                      <img src={homeIcon} />
                     </div>
-                  ) : (
-                    <></>
-                  )}
-                  <div className="dropdown-custom  btn" onClick={this.logout}>
-                    Logout
+                    <p className="col">Logout</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </header>
+        <div className="col container">{this.props.children}</div>
+      </div>
     );
   }
 }
-export default Header;
+
+export default HeaderWrapper;

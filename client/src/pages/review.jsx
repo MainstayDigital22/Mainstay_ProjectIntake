@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import axios from "axios";
+import { asterisk } from "../assets";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { MaterialReactTable } from "material-react-table";
 import React, { Component } from "react";
@@ -13,9 +14,10 @@ class Review extends Component {
       tagFilter: [],
       tagInput: [],
       posts: [],
-      showOpen: true,
+      showAction: true,
       showClosed: false,
-      showArchived: false,
+      showOverdue: false,
+      showProgress: false,
       height: 0,
       toggleList: true,
     };
@@ -127,23 +129,40 @@ class Review extends Component {
   };
   async updatePosts() {
     const filters = [];
-    if (this.state.showOpen)
-      filters.push("pending response", "new", "pending review");
-    if (this.state.showClosed) filters.push("closed");
-    if (this.state.showArchived) filters.push("archived");
+    if (this.state.showAction) filters.push("new", "pending review");
+    if (this.state.showProgress) filters.push("pending response");
+    if (this.state.showClosed) filters.push("completed", "closed");
 
     await axios
       .post(
         `${HOST}/ticket`,
         {
           username: getAuthUser(),
-          status: filters,
+          //status: filters,
         },
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
       )
       .then((res) => {
+        const posts = res.data;
+        const actionNeededCount = posts.filter(
+          (post) => post.status === "new" || post.status === "pending review"
+        ).length;
+        const inProgressCount = posts.filter(
+          (post) => post.status === "pending response"
+        ).length;
+        const overdueCount = posts.filter(
+          (post) => post.status === "overdue"
+        ).length; // Adjust based on actual logic
+        const closedCount = posts.filter(
+          (post) => post.status === "completed" || post.status === "closed"
+        ).length;
+
         this.setState({
-          posts: res.data,
+          posts: posts.filter((post) => filters.includes(post.status)),
+          actionNeededCount,
+          inProgressCount,
+          overdueCount,
+          closedCount,
         });
       })
       .catch((err) => {
@@ -161,83 +180,118 @@ class Review extends Component {
   render() {
     return (
       <div className="container">
+        <div className="row welcome-ticket">
+          <div className="col title">
+            <h1>Welcome {getAuthUser()}!</h1>
+          </div>
+          <div className="create col">
+            <a href="/new-ticket">
+              <div className="btn">
+                <div className="row">
+                  <div className="icon col-2">
+                    <img src={asterisk} />
+                  </div>
+                  <p className="col">Create a Ticket</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+
         {this.state.posts ? (
-          <div>
-            <div className="mb-2">
+          <>
+            <div className="row status">
               <button
-                className={
-                  this.state.showOpen ? "button-active" : "button-inactive"
-                }
+                className={`col ${
+                  this.state.showAction ? "status-active" : "status-inactive"
+                }`}
                 onClick={() => {
-                  this.setState({ showOpen: !this.state.showOpen }, () =>
+                  this.setState({ showAction: !this.state.showAction }, () =>
                     this.updatePosts()
                   );
                 }}>
-                Active Tickets
+                <h1>{this.state.actionNeededCount}</h1>
+                <h3>Action Needed</h3>
+              </button>
+
+              <button
+                className={`col ${
+                  this.state.showProgress ? "status-active" : "status-inactive"
+                }`}
+                onClick={() => {
+                  this.setState(
+                    { showProgress: !this.state.showProgress },
+                    () => this.updatePosts()
+                  );
+                }}>
+                <h1>{this.state.inProgressCount}</h1>
+                <h3>In Progress</h3>
               </button>
               <button
-                className={
-                  this.state.showClosed ? "button-active" : "button-inactive"
-                }
+                className={`col ${
+                  this.state.showOverdue ? "status-active" : "status-inactive"
+                }`}
+                onClick={() => {
+                  this.setState({ showOverdue: !this.state.showOverdue }, () =>
+                    this.updatePosts()
+                  );
+                }}>
+                <h1>{this.state.overdueCount}</h1>
+                <h3>Overdue</h3>
+              </button>
+              <button
+                className={`col ${
+                  this.state.showClosed ? "status-active" : "status-inactive"
+                }`}
                 onClick={() => {
                   this.setState({ showClosed: !this.state.showClosed }, () =>
                     this.updatePosts()
                   );
                 }}>
-                Closed Tickets
-              </button>
-              <button
-                className={
-                  this.state.showArchived ? "button-active" : "button-inactive"
-                }
-                onClick={() => {
-                  this.setState(
-                    { showArchived: !this.state.showArchived },
-                    () => this.updatePosts()
-                  );
-                }}>
-                Archived Tickets
+                <h1>{this.state.closedCount}</h1>
+                <h3>Closed</h3>
               </button>
             </div>
-
-            <MaterialReactTable
-              columns={this.columns}
-              data={this.state.posts}
-              editingMode="modal"
-              enableEditing
-              layoutMode="semantic"
-              onEditingRowSave={this.handleSaveRow}
-              renderRowActions={({ row, table }) => (
-                <Box sx={{ display: "flex", gap: "1rem" }}>
-                  <button
-                    onClick={() =>
-                      window.open(`/review/${row.original._id}`, "_self")
-                    }
-                    className="btn-action"
-                    title="View">
-                    <i class="fas fa-eye"></i>
-                  </button>
-
-                  {getAuthLevel() == "admin" && (
+            <div>
+              <MaterialReactTable
+                columns={this.columns}
+                data={this.state.posts}
+                editingMode="modal"
+                enableEditing
+                layoutMode="semantic"
+                onEditingRowSave={this.handleSaveRow}
+                renderRowActions={({ row, table }) => (
+                  <Box sx={{ display: "flex", gap: "1rem" }}>
                     <button
-                      onClick={() => this.handleDelete(row.original._id)}
+                      onClick={() =>
+                        window.open(`/review/${row.original._id}`, "_self")
+                      }
                       className="btn-action"
-                      title="Delete">
-                      <i class="fas fa-trash"></i>
+                      title="View">
+                      <i className="fas fa-eye"></i>
                     </button>
-                  )}
-                  <button
-                    onClick={() =>
-                      window.open(`/edit/${row.original._id}`, "_self")
-                    }
-                    className="btn-action"
-                    title="Edit">
-                    <i class="fas fa-pencil-alt"></i>
-                  </button>
-                </Box>
-              )}
-            />
-          </div>
+
+                    {getAuthLevel() == "admin" && (
+                      <button
+                        onClick={() => this.handleDelete(row.original._id)}
+                        className="btn-action"
+                        title="Delete">
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    )}
+                    <button
+                      onClick={() =>
+                        window.open(`/edit/${row.original._id}`, "_self")
+                      }
+                      className="btn-action"
+                      title="Edit">
+                      <i className="fas fa-pencil-alt"></i>
+                    </button>
+                  </Box>
+                )}
+              />
+            </div>
+          </>
         ) : (
           <></>
         )}

@@ -17,9 +17,16 @@ export const getAuthUser = () => {
   return user;
 };
 export const getAuthLevel = () => {
-  if (!localStorage.getItem("user")) {
+  const ignoredPaths = ["/403", "/login", "/signup"];
+  if (
+    !localStorage.getItem("user") &&
+    !ignoredPaths.includes(window.location.pathname)
+  ) {
     window.open(`/login`, "_self");
     return;
+  }
+  if (!localStorage.getItem("user")) {
+    return undefined;
   }
   const storage = JSON.parse(localStorage.getItem("user"));
   const perm = storage.perm;

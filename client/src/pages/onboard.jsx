@@ -60,6 +60,7 @@ export default class OnBoard extends Component {
   constructor() {
     super();
     this.state = {
+      errors: [],
       legalDocuments: [],
       actionLock: false,
       username: getAuthUser(),
@@ -100,8 +101,65 @@ export default class OnBoard extends Component {
         });
       });
   }
+  validateForm = () => {
+    const errors = {};
+    let formIsValid = true;
+    const newUserFields = [
+      "newusername",
+      "firstName",
+      "lastName",
+      "email",
+      "password",
+      "phone",
+    ];
+    const alwaysRequiredFields = [
+      "companyName",
+      "primaryContactName",
+      "websiteURL",
+      "contactEmail",
+    ];
+
+    const emailPattern =
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i;
+    const phonePattern = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/;
+    if (this.state.email && !emailPattern.test(this.state.email)) {
+      formIsValid = false;
+      errors["email"] = "Invalid email format.";
+    }
+    if (
+      this.state.contactEmail &&
+      !emailPattern.test(this.state.contactEmail)
+    ) {
+      formIsValid = false;
+      errors["contactEmail"] = "Invalid email format.";
+    }
+    if (this.state.phone && !phonePattern.test(this.state.phone)) {
+      formIsValid = false;
+      errors["phone"] =
+        "Invalid phone format. Include only numbers and basic symbols.";
+    }
+    const requiredFields =
+      this.state.username === "__new_user"
+        ? [...newUserFields, ...alwaysRequiredFields]
+        : alwaysRequiredFields;
+
+    requiredFields.forEach((field) => {
+      if (!this.state[field]) {
+        formIsValid = false;
+        errors[field] = `${field} is required.`;
+      }
+    });
+    console.log(errors);
+    this.setState({ errors });
+    return formIsValid;
+  };
+
   submit = async () => {
     if (this.state.actionLock) {
+      return;
+    }
+    if (!this.validateForm()) {
+      alert("There are errors in the form.");
       return;
     }
     this.setState({
@@ -148,7 +206,7 @@ export default class OnBoard extends Component {
               companyName: this.state.companyName,
               companyWebsite: this.state.websiteURL,
               contactName: this.state.primaryContactName,
-              contactEmail: this.state.email,
+              contactEmail: this.state.contactEmail,
               socials: [],
               legalDocuments: res.data,
               comments: this.state.comments,
@@ -196,7 +254,7 @@ export default class OnBoard extends Component {
                                 value={user.username}
                                 selected={
                                   this.state.username == user.username
-                                }>{`${user.username} - ${user.name}`}</option>
+                                }>{`${user.username} - ${user.firstName} ${user.lastName}`}</option>
                             );
                           })}
                         </select>
@@ -212,7 +270,7 @@ export default class OnBoard extends Component {
                             type="text"
                             name="newusername"
                             className={`form-control ${
-                              this.state.nameError && "error"
+                              this.state.errors.newusername && "error"
                             }`}
                             placeholder=""
                             onChange={this.handleChange}
@@ -224,7 +282,7 @@ export default class OnBoard extends Component {
                             type="text"
                             name="firstName"
                             className={`form-control ${
-                              this.state.nameError && "error"
+                              this.state.errors.firstName && "error"
                             }`}
                             placeholder=""
                             onChange={this.handleChange}
@@ -236,7 +294,7 @@ export default class OnBoard extends Component {
                             type="text"
                             name="lastName"
                             className={`form-control ${
-                              this.state.nameError && "error"
+                              this.state.errors.lastName && "error"
                             }`}
                             placeholder=""
                             onChange={this.handleChange}
@@ -250,7 +308,7 @@ export default class OnBoard extends Component {
                             type="text"
                             name="email"
                             className={`form-control ${
-                              this.state.nameError && "error"
+                              this.state.errors.email && "error"
                             }`}
                             placeholder=""
                             onChange={this.handleChange}
@@ -262,7 +320,7 @@ export default class OnBoard extends Component {
                             type="text"
                             name="password"
                             className={`form-control ${
-                              this.state.nameError && "error"
+                              this.state.errors.password && "error"
                             }`}
                             placeholder=""
                             onChange={this.handleChange}
@@ -274,7 +332,7 @@ export default class OnBoard extends Component {
                             type="text"
                             name="phone"
                             className={`form-control ${
-                              this.state.nameError && "error"
+                              this.state.errors.phone && "error"
                             }`}
                             placeholder=""
                             onChange={this.handleChange}
@@ -290,7 +348,7 @@ export default class OnBoard extends Component {
                         type="text"
                         name="companyName"
                         className={`form-control ${
-                          this.state.nameError && "error"
+                          this.state.errors.companyName && "error"
                         }`}
                         placeholder=""
                         onChange={this.handleChange}
@@ -302,7 +360,7 @@ export default class OnBoard extends Component {
                         type="text"
                         name="primaryContactName"
                         className={`form-control ${
-                          this.state.nameError && "error"
+                          this.state.errors.primaryContactName && "error"
                         }`}
                         placeholder=""
                         onChange={this.handleChange}
@@ -316,7 +374,7 @@ export default class OnBoard extends Component {
                         type="text"
                         name="websiteURL"
                         className={`form-control ${
-                          this.state.nameError && "error"
+                          this.state.errors.websiteURL && "error"
                         }`}
                         placeholder=""
                         onChange={this.handleChange}
@@ -326,9 +384,9 @@ export default class OnBoard extends Component {
                       <h5>Contact Email</h5>
                       <input
                         type="text"
-                        name="email"
+                        name="contactEmail"
                         className={`form-control ${
-                          this.state.nameError && "error"
+                          this.state.errors.contactEmail && "error"
                         }`}
                         placeholder=""
                         onChange={this.handleChange}

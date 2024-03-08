@@ -4,6 +4,8 @@ import { useParams } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
 import { getAuthToken, getAuthUser } from "../components/auth";
 import { HOST } from "../const";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 const GlobalStyles = createGlobalStyle`
 .error {
   border-color: red;
@@ -65,6 +67,7 @@ class Ticket extends Component {
     this.state = {
       actionLock: false,
       errors: {},
+      deadline: new Date(),
       category: 1,
       brandingFiles: [],
       brandingDesignDocuments: [],
@@ -82,6 +85,11 @@ class Ticket extends Component {
 
     this.setState({ errors });
     return Object.keys(errors).length === 0; // Form is valid if there are no errors
+  };
+  handleDateChange = (date) => {
+    this.setState({
+      deadline: date,
+    });
   };
   handleChange = (event) => {
     const { name, value } = event.target;
@@ -201,6 +209,7 @@ class Ticket extends Component {
               domainURL: this.state.domainURL,
               title: this.state.title,
               priority: this.state.priority,
+              deadline: this.state.deadline,
               branding: {
                 files:
                   this.state._id && this.state.branding?.files
@@ -681,6 +690,15 @@ class Ticket extends Component {
                       />
                     </>
                   )}
+                  <h5 htmlFor="deadline">Deadline</h5>
+                  <DatePicker
+                    selected={this.state.deadline}
+                    onChange={this.handleDateChange}
+                    dateFormat="MMMM d, yyyy"
+                    timeCaption="time"
+                    className="form-control"
+                  />
+
                   <h5>Additional Comments</h5>
                   <input
                     type="text"

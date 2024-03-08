@@ -1,8 +1,8 @@
-import "bootstrap/dist/css/bootstrap.min.css";
 import React from "react";
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
-import { Header, Protected } from "./components";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Protected, HeaderWrapper } from "./components";
 import {
   Details,
   Home,
@@ -20,69 +20,54 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/403" element={<Page403 />} />
-        <Route
-          path="/review"
-          element={
-            <Protected perms={["admin","staff","client"]}>
-              <Header />
-              <Review />
-            </Protected>
-          }
-        />
-        <Route
-          path="/review/:id"
-          element={
-            <Protected perms={["admin","staff","client"]}>
-              <Header />
-              <Details />
-            </Protected>
-          }
-        />
-        <Route
-          path="/new-ticket"
-          element={
-            <Protected perms={["admin", "staff", "client"]}>
-              <Header />
-              <Ticket />
-            </Protected>
-          }
-        />
-        <Route
-          path="/edit/:id"
-          element={
-            <Protected perms={["admin", "staff", "client"]}>
-              <Header />
-              <Ticket />
-            </Protected>
-          }
-        />
-        <Route
-          path="/onboard"
-          element={
-            <Protected perms={["admin", "staff", "client"]}>
-              <Header />
-              <OnBoard />
-            </Protected>
-          }
-        />
-        <Route
-          path="/users"
-          element={
-            <Protected perms={["admin"]}>
-              <Header />
-              <Users />
-            </Protected>
-          }
-        />
-        <Route
-          path="/"
-          element={
-            <Protected perms={["admin", "staff", "client"]}>
-              <Header />
-              <Home />
-            </Protected>
-          }
-        />
+        {[
+          "/",
+          "/review",
+          "/review/:id",
+          "/new-ticket",
+          "/edit/:id",
+          "/onboard",
+          "/users",
+        ].map((path, index) => (
+          <Route
+            key={index}
+            path={path}
+            element={
+              <HeaderWrapper>
+                {path === "/" && (
+                  <Protected perms={["admin", "staff", "client"]}>
+                    <Home />
+                  </Protected>
+                )}
+                {path.startsWith("/review") && (
+                  <Protected perms={["admin", "staff", "client"]}>
+                    <Review />
+                  </Protected>
+                )}
+                {path === "/new-ticket" && (
+                  <Protected perms={["admin", "staff", "client"]}>
+                    <Ticket />
+                  </Protected>
+                )}
+                {path.startsWith("/edit") && (
+                  <Protected perms={["admin", "staff", "client"]}>
+                    <Ticket />
+                  </Protected>
+                )}
+                {path === "/onboard" && (
+                  <Protected perms={["admin", "staff", "client"]}>
+                    <OnBoard />
+                  </Protected>
+                )}
+                {path === "/users" && (
+                  <Protected perms={["admin"]}>
+                    <Users />
+                  </Protected>
+                )}
+              </HeaderWrapper>
+            }
+          />
+        ))}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
       </Routes>

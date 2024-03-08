@@ -8,7 +8,11 @@ const Protected = ({ perms, children }) => {
     //console.log(expireTime)
     return perms.includes(perm);
   }
-  if (!localStorage.getItem("user")) {
+  const ignoredPaths = ["/403", "/login", "/signup"];
+  if (
+    !localStorage.getItem("user") &&
+    !ignoredPaths.includes(window.location.pathname)
+  ) {
     return <Navigate to="/login" replace />;
   }
   if (auth(perms)) {

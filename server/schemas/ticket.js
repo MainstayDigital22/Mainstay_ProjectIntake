@@ -15,13 +15,7 @@ const ticketSchema = new Schema({
   status: {
     type: String,
     required: true,
-    enum: [
-      "new",
-      "completed",
-      "archived",
-      "pending review",
-      "pending response",
-    ],
+    enum: ["new", "completed", "closed", "pending review", "pending response"],
     default: "new",
   },
   branding: {
@@ -74,6 +68,7 @@ const ticketSchema = new Schema({
       },
     ],
   },
+  deadline: { type: Date, required: true },
   SEOKeywords: String,
   comments: String, //anything additional
 });
