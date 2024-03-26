@@ -1,10 +1,9 @@
-import { Box } from "@mui/material";
 import axios from "axios";
-import { asterisk } from "../assets";
+import { Chat } from "../components/chat";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { MaterialReactTable } from "material-react-table";
 import React, { Component } from "react";
-import { getAuthLevel, getAuthToken, getAuthUser } from "../components/auth";
+import { asterisk, profilePlaceholder } from "../assets";
+import { getAuthToken, getAuthUser, getAuthLevel } from "../components/auth";
 import { HOST } from "../const";
 class Review extends Component {
   constructor(props) {
@@ -14,6 +13,7 @@ class Review extends Component {
       tagFilter: [],
       tagInput: [],
       posts: [],
+      open: -1,
       showAction: true,
       showClosed: false,
       showOverdue: false,
@@ -23,87 +23,6 @@ class Review extends Component {
     };
     this.onImgLoad = this.onImgLoad.bind(this);
   }
-  columns = [
-    {
-      accessorKey: "title",
-      size: 200,
-      header: "Title",
-      muiTableHeadCellProps: { sx: { color: "black" } },
-      Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
-    },
-    {
-      accessorKey: "username",
-      header: "Username",
-      size: 50,
-      muiTableHeadCellProps: { sx: { color: "black" } },
-      Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
-    },
-    {
-      accessorKey: "domainURL",
-      header: "Domain",
-      size: 70,
-      muiTableHeadCellProps: { sx: { color: "black" } },
-      Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong>,
-    },
-    {
-      accessorKey: "category",
-      header: "Service Type",
-      filterFn: "equals",
-      size: 50,
-      filterSelectOptions: [
-        { text: "PBC", value: "1" },
-        { text: "SEO", value: "2" },
-        { text: "Web Maintain & Gov", value: "3" },
-        { text: "Website Build", value: "4" },
-        { text: "App Build", value: "5" },
-      ],
-      filterVariant: "select",
-      muiTableHeadCellProps: { sx: { color: "black" } },
-      Cell: ({ renderedCellValue }) => (
-        <strong>
-          {renderedCellValue == 1
-            ? "PBC"
-            : renderedCellValue == 2
-            ? "SEO"
-            : renderedCellValue == 3
-            ? "Web Maintain & Gov"
-            : renderedCellValue == 4
-            ? "Website Build"
-            : "App Build"}
-        </strong>
-      ),
-    },
-    {
-      accessorKey: "priority",
-      header: "Priority",
-      filterFn: "equals",
-      filterSelectOptions: [
-        { text: "ASAP", value: "ASAP" },
-        { text: "high", value: "high" },
-        { text: "medium", value: "medium" },
-        { text: "low", value: "low" },
-      ],
-      filterVariant: "select",
-      muiTableHeadCellProps: { sx: { color: "black" } },
-      Cell: ({ renderedCellValue }) => (
-        <div
-          className="item_info_type col-auto m-2 rounded priority"
-          style={{
-            backgroundColor: `${
-              renderedCellValue == "ASAP"
-                ? "#ee8888"
-                : renderedCellValue == "high"
-                ? "#ffccaa"
-                : renderedCellValue == "medium"
-                ? "#f5f555"
-                : "#55bbff"
-            }`,
-          }}>
-          <strong>{renderedCellValue}</strong>
-        </div>
-      ),
-    },
-  ];
   onImgLoad({ target: img }) {
     let currentHeight = this.state.height;
     if (currentHeight < img.offsetHeight) {
@@ -252,45 +171,46 @@ class Review extends Component {
                 <h3>Closed</h3>
               </button>
             </div>
-            <div>
-              <MaterialReactTable
-                columns={this.columns}
-                data={this.state.posts}
-                editingMode="modal"
-                enableEditing
-                layoutMode="semantic"
-                onEditingRowSave={this.handleSaveRow}
-                renderRowActions={({ row, table }) => (
-                  <Box sx={{ display: "flex", gap: "1rem" }}>
-                    <button
-                      onClick={() =>
-                        window.open(`/review/${row.original._id}`, "_self")
-                      }
-                      className="btn-action"
-                      title="View">
-                      <i className="fas fa-eye"></i>
-                    </button>
-
-                    {getAuthLevel() == "admin" && (
-                      <button
-                        onClick={() => this.handleDelete(row.original._id)}
-                        className="btn-action"
-                        title="Delete">
-                        <i className="fas fa-trash"></i>
-                      </button>
-                    )}
-                    <button
-                      onClick={() =>
-                        window.open(`/edit/${row.original._id}`, "_self")
-                      }
-                      className="btn-action"
-                      title="Edit">
-                      <i className="fas fa-pencil-alt"></i>
-                    </button>
-                  </Box>
-                )}
-              />
-            </div>
+            <div style={{display:"inline-flex",width:"100%",height:"100%"}}>
+              <div id="panel" className={this.state.open==-1?"ticket-container":"ticket-container-shrink"}>
+            <div className="ticket-panel">
+            <div className="ticket-header">
+              <h4 style={{marginTop: -2}}>Active Tickets</h4>
+              <div className="ticket-action-bar">{this.state.open==-1&&<h4 style={{color: "#6C7577"}}>Manage Tickets</h4>}<a href="/new-ticket" style={{textDecoration:"none"}}><h4 style={{color: "#0C58EF"}}>+ New Ticket</h4></a></div>
+              </div>
+              {this.state.posts.map((ticket,index)=>{
+                return <div className="ticket-item" onClick={()=>{this.state.open==-1?this.setState({open:index}):this.setState({open:-1})}}>
+                  <div style={{display:"inline-flex", gap:16}}>
+                  <div className="ticket-preview">
+                  <img src={profilePlaceholder}/>
+                  <div className="status-label" style={{backgroundColor: ["pending response","pending review"].includes(ticket.status)?"#FFF87E":ticket.status=="new"?"#C7EAB7":"#000"}}>
+                    <p className="status-label-p" style={{color: ["pending response","pending review"].includes(ticket.status)?"#B8B41C":ticket.status=="new"?"#56873F":"#FFF"}}>{ticket.status.split(" ")[0].charAt(0).toUpperCase()+ticket.status.split(" ")[0].slice(1)}</p></div>
+                  </div>
+                  <div className="ticket-text">
+                    <h3>{ticket.title}</h3>
+                    <div className="ticket-description"><p>{ticket.comments}</p></div>
+                    <p><strong>Created By:</strong> {ticket.username.charAt(0).toUpperCase()+ticket.username.slice(1)}&nbsp;&nbsp;&nbsp;<strong>Domain:</strong> {ticket.domainURL}</p>
+                  </div>
+                  </div>
+                </div>
+              })}
+              </div>
+              </div>
+              
+              {this.state.open!=-1&&<div className="chat-panel">
+                <h1>{this.state.posts[this.state.open].title}</h1>
+                <Chat messages={this.state.posts[this.state.open].chat.map((msg) => ({
+                position:
+                  (getAuthLevel() === "client") === msg.isClient
+                    ? "right"
+                    : "left",
+                type: "text",
+                title: msg.username,
+                text: msg.message,
+              }))} />
+                </div>}
+              </div>
+            
           </>
         ) : (
           <></>

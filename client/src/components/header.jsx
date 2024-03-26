@@ -1,17 +1,17 @@
-import React, { Component } from "react";
-import { textLogo, homeIcon } from "../assets";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
+import React, { Component } from "react";
+import { editIcon, homeIcon, personIcon, planeIcon, textLogo, ticketIcon } from "../assets";
 import { getAuthLevel, getAuthToken, getAuthUser } from "../components/auth";
 import { HOST } from "../const";
 
 const navLinks = [
   { href: "/", text: "Home", icon: homeIcon },
-  { href: "/review", text: "Review", icon: homeIcon },
-  { href: "/onboard", text: "Onboard", icon: homeIcon },
-  { href: "/new-ticket", text: "New Ticket", icon: homeIcon },
+  { href: "/review", text: "Review", icon: editIcon },
+  { href: "/onboard", text: "Onboard", icon: planeIcon },
+  { href: "/new-ticket", text: "New Ticket", icon: ticketIcon },
   ...(getAuthLevel() === "admin"
-    ? [{ href: "/users", text: "Users", icon: homeIcon }]
+    ? [{ href: "/users", text: "Users", icon: personIcon }]
     : []),
 ];
 
@@ -115,12 +115,13 @@ class HeaderWrapper extends Component {
               </div>
               <div className="navmenu navend">
                 <div className="navlinks">
+                  <a href={""}>
                   <div onClick={this.logout} className="row">
-                    <div className="icon">
+                    {/*<div className="icon">
                       <img src={homeIcon} />
-                    </div>
-                    <p className="col">Logout</p>
-                  </div>
+                        </div>*/}
+                    <p className="col" style={{fontWeight:700}}>Logout</p>
+                  </div></a>
                 </div>
               </div>
             </div>

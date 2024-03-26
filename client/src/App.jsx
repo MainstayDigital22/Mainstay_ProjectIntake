@@ -1,10 +1,9 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Protected, HeaderWrapper } from "./components";
+import React from "react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import "./App.css";
+import { HeaderWrapper, Protected } from "./components";
 import {
-  Details,
   Home,
   Login,
   OnBoard,
@@ -12,8 +11,9 @@ import {
   Review,
   SignUp,
   Ticket,
-  Users,
+  Users
 } from "./pages";
+import Details from "./pages/details";
 
 const App = () => {
   return (
@@ -39,9 +39,14 @@ const App = () => {
                     <Home />
                   </Protected>
                 )}
-                {path.startsWith("/review") && (
+                {path === "/review" && (
                   <Protected perms={["admin", "staff", "client"]}>
                     <Review />
+                  </Protected>
+                )}
+                {path.startsWith("/review") && path !== "/review" && (
+                  <Protected perms={["admin", "staff", "client"]}>
+                    <Details />
                   </Protected>
                 )}
                 {path === "/new-ticket" && (
