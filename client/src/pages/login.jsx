@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
-import building from "../assets/building.jpg";
+import building from "../assets/images/building.jpg";
 import { HOST } from "../const";
 const Login = () => {
   const [username, setUsername] = useState("");

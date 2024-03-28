@@ -96,55 +96,54 @@ body {
   margin-top: -3px;
   width: 20px;
 }
-.ticket-container{
+.ticket-container {
   padding: 10px 22px 10px 14px !important;
   display: block;
-  width:100%;
+  width: 100%;
   //transition: all 0.3s ease;
 }
-.ticket-container-shrink{
+.ticket-container-shrink {
   padding: 10px 0px 10px 14px !important;
   width: 443px;
   display: block;
   //transition: all 0.3s ease;
 }
-.chat-panel{
+.chat-panel {
   width: 100%;
-height: 100%;
-padding: 24px 24px 10px 24px;
-margin-top: 10px;
-margin-right: 20px;
-border-radius: 0px 8px 8px 0px;
-gap: 12px;
-background-color: #fafafa;
-
+  height: 100%;
+  padding: 24px 24px 10px 24px;
+  margin-top: 10px;
+  margin-right: 20px;
+  border-radius: 0px 8px 8px 0px;
+  gap: 12px;
+  background-color: #fafafa;
 }
-.ticket-panel{
-border-radius: 8px 0px 0px 8px;
-border: 0px 1px 0px 0px;
-background: #FFFFFF;
-border-right: 1px solid #0C58EF
+.ticket-panel {
+  border-radius: 8px 0px 0px 8px;
+  border: 0px 1px 0px 0px;
+  background: #ffffff;
+  border-right: 1px solid #0c58ef;
 }
 
-.ticket-action-bar{
+.ticket-action-bar {
   display: inline-flex;
   width: 604px;
-height: 12px;
-margin-top: -12px;
-justify-content: end !important;
-gap: 24px
+  height: 12px;
+  margin-top: -12px;
+  justify-content: end !important;
+  gap: 24px;
 }
-.ticket-header{
+.ticket-header {
   width: 100%;
-height: 45px;
-padding: 16px;
-display: flex;
-border: 0px 0px 0.5px 0px;
-justify-content: space-between;
-border-bottom: 0.5px solid #AEAFB0;
-align-items: center;
+  height: 45px;
+  padding: 16px;
+  display: flex;
+  border: 0px 0px 0.5px 0px;
+  justify-content: space-between;
+  border-bottom: 0.5px solid #aeafb0;
+  align-items: center;
 }
-.ticket-header h4{
+.ticket-header h4 {
   white-space: nowrap;
   font-family: "Satoshi";
   font-size: 18px;
@@ -153,72 +152,98 @@ align-items: center;
   letter-spacing: 0em;
   text-align: center;
   width: 111px;
-height: 13px;
-color: #000;
+  height: 13px;
+  color: #000;
 }
-.ticket-item{
-height: 121px;
-padding: 16px;
-gap: 16px;
-display: block;
+.ticket-item {
+  height: 132px;
+  padding: 16px;
+  gap: 16px;
+  display: block;
 }
-.ticket-preview{
+.ticket-preview {
   justify-content: center;
   text-align: center;
-  width: 60px;
+  width: 70px;
   height: 89px;
 }
-.ticket-description{
-  height: 30px;
+.ticket-description {
+  height: 43px;
   margin-bottom: 10px;
-overflow: hidden;
+  overflow: hidden;
 }
-.ticket-text{
-height: 90px;
-overflow: hidden;
-padding: 8px 0px 8px 0px;
-gap: 16px
-
+.chat-info-1 {
+  display: flex;
+  height: 26px;
+  flex-direction: row;
+  border-bottom: solid 0.5px #d1d1d1;
 }
-.ticket-text h3{
-  font-family: "Satoshi";
-font-size: 16px;
-font-weight: 700;
-line-height: 14px;
-letter-spacing: 0em;
-  }
-  .ticket-text p{
-    font-family: "Satoshi";
-font-size: 12px;
-font-weight: 400;
-line-height: 14px;
-letter-spacing: 0em;
-text-align: left;
-
-    }
-
-.status-label{
-  width: 60px;
-  height: 21px;
+.chat-info-2 {
+  margin-top: 7px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.chat-info-3 {
+  display: flex;
+  padding-bottom: 4px;
   margin-top: 8px;
-  padding: 4px 8px 20px 8px;
+  border-bottom: solid 0.5px #d1d1d1;
+  justify-content: space-between;
+  flex-direction: row;
+}
+.ticket-text {
+  height: 100px;
+  overflow: hidden;
+  padding: 8px 0px 8px 0px;
+  gap: 16px;
+}
+.ticket-text h3 {
+  font-family: "Satoshi";
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 14px;
+  color: #131a1c;
+  letter-spacing: 0em;
+}
+.ticket-text p {
+  font-family: "Satoshi";
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 14px;
+  letter-spacing: 0em;
+  text-align: left;
+  color: #131a1c;
+}
+
+.status-label {
+  width: 70px;
+  height: 19px;
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-direction: row;
+  align-items: baseline;
+  margin-top: 8px;
+  padding: 1px 8px 18px 8px;
   border-radius: 27px;
 }
-.status-label p{
+.status-label p {
   justify-content: bottom;
   font-family: "Satoshi";
-font-size: 12px;
-font-weight: 400;
-line-height: 16px;
-letter-spacing: 0em;
+  font-size: 10px !important;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: 0em;
 }
-.ticket-preview img{
+.ticket-preview img {
   border-radius: 50%;
-  width: 60px;
-  height:60px;
+  width: 70px;
+  height: 70px;
   object-fit: contain;
+  border: 1px solid #0c58ef;
 }
-.icon img{
+.icon img {
   width: 20px;
 }
 .navend {
@@ -313,6 +338,158 @@ strong {
   transition: all 0.3s ease;
 }
 
+.chat-infos p {
+  color: #828282;
+  font-family: Satoshi;
+  font-size: 12px;
+  font-weight: 400;
+  margin-bottom: 0px;
+  line-height: 16.2px;
+}
+
+.chat-infos h1 {
+  font-family: Satoshi;
+  font-size: 22px;
+  margin-bottom: 0px;
+  font-weight: 700;
+  line-height: 29.7px;
+}
+
+.chat-messenger {
+  margin-top: 12px;
+  padding: 8px 16px 8px 16px;
+  gap: 12px;
+  border-radius: 24px;
+  border: 1px 0px 0px 0px;
+  opacity: 0px;
+  border: 1px solid #d9d9d9;
+  background: #ffffff;
+}
+
+.chat-msg {
+  padding: 12px 0px 24px 0px;
+  gap: 12px;
+  border: 0px 0px 0.5px 0px;
+  opacity: 0px;
+  border-bottom: 0.5px solid #9ea7a9;
+}
+
+.chat-msg img,
+.chat-input img {
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+  border: 1px solid #0c58ef;
+}
+
+.chat-msg-title {
+  height: 12px;
+  gap: 0px;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+.chat-msg-title img {
+  width: 20px;
+  height: 20px;
+  gap: 0px;
+  opacity: 0px;
+  border: none;
+}
+
+.chat-msg-title h3 {
+  font-family: Satoshi;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 21.6px;
+  margin-bottom: 0;
+  text-align: left;
+}
+
+.chat-msg-date {
+  display: inline-flex;
+  gap: 8px;
+  height: 7px;
+  margin-top: 6px;
+}
+p {
+  margin: 0 !important;
+}
+.chat-msg-date p {
+  font-family: Satoshi;
+  font-size: 10px;
+  position: relative;
+  font-weight: 500;
+  line-height: 13.5px;
+  text-align: left;
+  color: #9ea7a9;
+}
+.chat-msg-description {
+  margin-top: 6px;
+}
+.chat-msg-description p {
+  font-family: Satoshi;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 14px;
+  text-align: left;
+  color: #131a1c;
+}
+
+.chat-input {
+  height: 113px;
+  padding: 24px 0px 12px 0px;
+  gap: 12px;
+  border: 0px 0px 0.5px 0px;
+  opacity: 0px;
+}
+
+.chat-input textarea {
+  resize: none;
+  height: 51px;
+  gap: 0px;
+  border: none;
+  border-radius: 8px;
+  opacity: 0px;
+  background: #f6f6f6;
+}
+.chat-toolbar {
+  width: 128px;
+  margin-left: 4px;
+  display: flex;
+  gap: 16px;
+}
+.chat-toolbar img {
+  border-radius: 0px;
+  border: none;
+}
+.chat-btn {
+  width: 129px;
+  height: 26px;
+  padding: 3px 16px 16px;
+  gap: 10px;
+  margin-top: 8px;
+  border-radius: 4px;
+  border: 1px solid #0c58ef;
+  cursor: pointer;
+}
+.chat-btn:hover {
+  background-color: #0c58ef;
+}
+.chat-btn:hover p {
+  color: white;
+}
+.chat-btn p {
+  font-family: Satoshi;
+  font-size: 14px;
+  margin: 0px;
+  font-weight: 500;
+  line-height: 18.9px;
+  text-align: left;
+  color: #0c58ef;
+}
 @-webkit-keyframes sheen {
   0% {
     opacity: 1;
@@ -360,6 +537,7 @@ h5,
 .h3,
 .h5 {
   margin-top: 0;
+  margin-bottom: 0;
   font-weight: 700;
   color: #0d0c22;
 }
@@ -387,11 +565,6 @@ h2 {
   margin-bottom: 10px;
   font-size: 36px;
   line-height: 46px;
-}
-
-h3 {
-  font-size: 22px;
-  margin-bottom: 25px;
 }
 
 h1.title {

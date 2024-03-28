@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
 import { HOST } from "../const";
-import building from "../assets/building.jpg";
+import building from "../assets/images/building.jpg";
 import "bootstrap/dist/css/bootstrap.min.css";
 const SignUp = () => {
   const [username, setUsername] = useState("");

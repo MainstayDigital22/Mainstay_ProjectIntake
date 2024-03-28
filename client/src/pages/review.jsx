@@ -5,6 +5,8 @@ import React, { Component } from "react";
 import { asterisk, profilePlaceholder } from "../assets";
 import { getAuthToken, getAuthUser, getAuthLevel } from "../components/auth";
 import { HOST } from "../const";
+import { Label } from "../components/label";
+import { ChatInfo } from "../components/chatinfo";
 class Review extends Component {
   constructor(props) {
     super(props);
@@ -125,8 +127,9 @@ class Review extends Component {
                   this.state.showAction ? "status-active" : "status-inactive"
                 }`}
                 onClick={() => {
-                  this.setState({ showAction: !this.state.showAction }, () =>
-                    this.updatePosts()
+                  this.setState(
+                    { open: -1, showAction: !this.state.showAction },
+                    () => this.updatePosts()
                   );
                 }}>
                 <h1>{this.state.actionNeededCount}</h1>
@@ -139,20 +142,21 @@ class Review extends Component {
                 }`}
                 onClick={() => {
                   this.setState(
-                    { showProgress: !this.state.showProgress },
+                    { open: -1, showProgress: !this.state.showProgress },
                     () => this.updatePosts()
                   );
                 }}>
                 <h1>{this.state.inProgressCount}</h1>
-                <h3>In Progress</h3>
+                <h3>Awaiting Response</h3>
               </button>
               <button
                 className={`col ${
                   this.state.showOverdue ? "status-active" : "status-inactive"
                 }`}
                 onClick={() => {
-                  this.setState({ showOverdue: !this.state.showOverdue }, () =>
-                    this.updatePosts()
+                  this.setState(
+                    { open: -1, showOverdue: !this.state.showOverdue },
+                    () => this.updatePosts()
                   );
                 }}>
                 <h1>{this.state.overdueCount}</h1>
@@ -163,54 +167,77 @@ class Review extends Component {
                   this.state.showClosed ? "status-active" : "status-inactive"
                 }`}
                 onClick={() => {
-                  this.setState({ showClosed: !this.state.showClosed }, () =>
-                    this.updatePosts()
+                  this.setState(
+                    { open: -1, showClosed: !this.state.showClosed },
+                    () => this.updatePosts()
                   );
                 }}>
                 <h1>{this.state.closedCount}</h1>
                 <h3>Closed</h3>
               </button>
             </div>
-            <div style={{display:"inline-flex",width:"100%",height:"100%"}}>
-              <div id="panel" className={this.state.open==-1?"ticket-container":"ticket-container-shrink"}>
-            <div className="ticket-panel">
-            <div className="ticket-header">
-              <h4 style={{marginTop: -2}}>Active Tickets</h4>
-              <div className="ticket-action-bar">{this.state.open==-1&&<h4 style={{color: "#6C7577"}}>Manage Tickets</h4>}<a href="/new-ticket" style={{textDecoration:"none"}}><h4 style={{color: "#0C58EF"}}>+ New Ticket</h4></a></div>
-              </div>
-              {this.state.posts.map((ticket,index)=>{
-                return <div className="ticket-item" onClick={()=>{this.state.open==-1?this.setState({open:index}):this.setState({open:-1})}}>
-                  <div style={{display:"inline-flex", gap:16}}>
-                  <div className="ticket-preview">
-                  <img src={profilePlaceholder}/>
-                  <div className="status-label" style={{backgroundColor: ["pending response","pending review"].includes(ticket.status)?"#FFF87E":ticket.status=="new"?"#C7EAB7":"#000"}}>
-                    <p className="status-label-p" style={{color: ["pending response","pending review"].includes(ticket.status)?"#B8B41C":ticket.status=="new"?"#56873F":"#FFF"}}>{ticket.status.split(" ")[0].charAt(0).toUpperCase()+ticket.status.split(" ")[0].slice(1)}</p></div>
+            <div
+              style={{ display: "inline-flex", width: "100%", height: "100%" }}>
+              <div
+                id="panel"
+                className={
+                  this.state.open == -1
+                    ? "ticket-container"
+                    : "ticket-container-shrink"
+                }>
+                <div className="ticket-panel">
+                  <div className="ticket-header">
+                    <h4 style={{ marginTop: -2 }}>Active Tickets</h4>
+                    <div className="ticket-action-bar">
+                      {this.state.open == -1 && (
+                        <h4 style={{ color: "#6C7577" }}>Manage Tickets</h4>
+                      )}
+                      <a href="/new-ticket" style={{ textDecoration: "none" }}>
+                        <h4 style={{ color: "#0C58EF" }}>+ New Ticket</h4>
+                      </a>
+                    </div>
                   </div>
-                  <div className="ticket-text">
-                    <h3>{ticket.title}</h3>
-                    <div className="ticket-description"><p>{ticket.comments}</p></div>
-                    <p><strong>Created By:</strong> {ticket.username.charAt(0).toUpperCase()+ticket.username.slice(1)}&nbsp;&nbsp;&nbsp;<strong>Domain:</strong> {ticket.domainURL}</p>
-                  </div>
-                  </div>
+                  {this.state.posts.map((ticket, index) => {
+                    return (
+                      <div
+                        className="ticket-item"
+                        onClick={() => {
+                          this.state.open == -1
+                            ? this.setState({ open: index })
+                            : this.setState({ open: -1 });
+                        }}>
+                        <div style={{ display: "inline-flex", gap: 16 }}>
+                          <div className="ticket-preview">
+                            <img src={profilePlaceholder} />
+                            <Label status={ticket.status} />
+                          </div>
+                          <div className="ticket-text">
+                            <h3>{ticket.title}</h3>
+                            <div className="ticket-description">
+                              <p>{ticket.comments}</p>
+                            </div>
+                            <p>
+                              <strong>Created By:</strong>{" "}
+                              {ticket.username.charAt(0).toUpperCase() +
+                                ticket.username.slice(1)}
+                              &nbsp;&nbsp;&nbsp;<strong>Domain:</strong>{" "}
+                              {ticket.domainURL}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              })}
               </div>
-              </div>
-              
-              {this.state.open!=-1&&<div className="chat-panel">
-                <h1>{this.state.posts[this.state.open].title}</h1>
-                <Chat messages={this.state.posts[this.state.open].chat.map((msg) => ({
-                position:
-                  (getAuthLevel() === "client") === msg.isClient
-                    ? "right"
-                    : "left",
-                type: "text",
-                title: msg.username,
-                text: msg.message,
-              }))} />
-                </div>}
-              </div>
-            
+
+              {this.state.open != -1 && (
+                <div className="chat-panel">
+                  <ChatInfo post={this.state.posts[this.state.open]} />
+                  <Chat post={this.state.posts[this.state.open]} />
+                </div>
+              )}
+            </div>
           </>
         ) : (
           <></>
