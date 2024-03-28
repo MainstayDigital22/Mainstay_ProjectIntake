@@ -75,7 +75,7 @@ export function Chat({ post }) {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  width: "100%",
+                  width: "calc(100% - 60px)",
                 }}>
                 <div className="chat-msg-title">
                   <h3>{msg.user}</h3>
@@ -83,10 +83,10 @@ export function Chat({ post }) {
                 </div>
                 <div className="chat-msg-date">
                   <div>
-                    <p>{msg.text}</p>
+                    <p>{msg.user}</p>
                   </div>
                   <div>
-                    <p>{msg.text}</p>
+                    <p>{msg.user}</p>
                   </div>
                 </div>
                 <div className="chat-msg-description">
