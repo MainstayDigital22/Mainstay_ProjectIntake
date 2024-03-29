@@ -7,4 +7,4 @@ export { default as Review } from "./review";
 export { default as SignUp } from "./signup";
 export { default as Ticket } from "./ticket";
 export { default as Users } from "./users";
-
+export { default as Orgs } from "./orgs";

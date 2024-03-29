@@ -7,11 +7,12 @@ import {
   Home,
   Login,
   OnBoard,
+  Orgs,
   Page403,
   Review,
   SignUp,
   Ticket,
-  Users
+  Users,
 } from "./pages";
 import Details from "./pages/details";
 
@@ -28,6 +29,7 @@ const App = () => {
           "/edit/:id",
           "/onboard",
           "/users",
+          "/orgs",
         ].map((path, index) => (
           <Route
             key={index}
@@ -67,6 +69,11 @@ const App = () => {
                 {path === "/users" && (
                   <Protected perms={["admin"]}>
                     <Users />
+                  </Protected>
+                )}
+                {path === "/orgs" && (
+                  <Protected perms={["admin"]}>
+                    <Orgs />
                   </Protected>
                 )}
               </HeaderWrapper>

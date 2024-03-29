@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const ticketSchema = new Schema({
-  username: { type: String, required: true }, //username for accessing our portal
+  username: { type: String, required: true, ref: "Users" }, //username for accessing our portal
   title: { type: String, required: true },
   domainURL: { type: String, required: true },
   category: { type: String, required: true }, //range 1 2 3 4 5, each stands for pbc, seo, web maintainace and governace, new website build, and new app build

@@ -48,8 +48,10 @@ const ticketRouter = require("./routes/ticket");
 server.use("/ticket", ticketRouter);
 const { uploadRouter } = require("./routes/upload");
 server.use("/file", uploadRouter);
+const orgRouter = require("./routes/organization");
+server.use("/organization", orgRouter);
 const { authRouter } = require("./routes/auth");
-server.use("", authRouter);
+server.use("/", authRouter);
 
 // media routes
 server.get("/file/:filename", async (req, res) => {

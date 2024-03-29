@@ -93,11 +93,23 @@ export default class OnBoard extends Component {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
+        const users = res.data.filter((user) => {
+          return user.permission == "client";
+        });
         this.setState({
-          users: res.data.filter((user) => {
-            return user.permission == "client";
-          }),
-          username: "__new_user",
+          users,
+          username: users.length == 0 ? "__new_user" : users[0]._id,
+        });
+        console.log(users[0]._id);
+      });
+    axios
+      .get(`${HOST}/organization`, {
+        headers: { Authorization: `Bearer ${getAuthToken()}` },
+      })
+      .then((res) => {
+        this.setState({
+          orgs: res.data,
+          org: res.data.length == 0 ? "__new_org" : res.data[0]._id,
         });
       });
   }
@@ -112,7 +124,7 @@ export default class OnBoard extends Component {
       "password",
       "phone",
     ];
-    const alwaysRequiredFields = [
+    const newOrgFields = [
       "companyName",
       "primaryContactName",
       "websiteURL",
@@ -139,9 +151,13 @@ export default class OnBoard extends Component {
         "Invalid phone format. Include only numbers and basic symbols.";
     }
     const requiredFields =
-      this.state.username === "__new_user"
-        ? [...newUserFields, ...alwaysRequiredFields]
-        : alwaysRequiredFields;
+      this.state.username === "__new_user" && this.state.org === "__new_org"
+        ? [...newUserFields, ...newOrgFields]
+        : this.state.org === "__new_org"
+        ? newOrgFields
+        : this.state.username === "__new_user"
+        ? newUserFields
+        : [];
 
     requiredFields.forEach((field) => {
       if (!this.state[field]) {
@@ -169,8 +185,12 @@ export default class OnBoard extends Component {
     for (let i = 0; i < this.state.legalDocuments.length; i += 1) {
       formData.append("files", this.state.legalDocuments[i]);
     }
+
+    let organizationId = this.state.org;
+    let userId = this.state.username;
+
     if (this.state.username == "__new_user") {
-      let req = await axios
+      let res = await axios
         .post(`${HOST}/user/signup`, {
           username: this.state.newusername,
           firstName: this.state.firstName,
@@ -183,47 +203,64 @@ export default class OnBoard extends Component {
           alert(err.response.data);
           this.setState({ actionLock: false });
         });
-      if (req.status == 200) {
-        this.setState({ username: this.state.newusername });
+      if (res.status == 200) {
+        userId = res.data.id;
       } else {
         alert("can not create new user");
         this.setState({ actionLock: false });
         return;
       }
     }
-    axios
-      .post(`${HOST}/file/upload`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((res) => {
-        axios
-          .post(
-            `${HOST}/user/onboard`,
-            {
-              username: this.state.username,
-              companyName: this.state.companyName,
-              companyWebsite: this.state.websiteURL,
-              contactName: this.state.primaryContactName,
-              contactEmail: this.state.contactEmail,
-              socials: [],
-              legalDocuments: res.data,
-              comments: this.state.comments,
+
+    if (this.state.org == "__new_org") {
+      try {
+        const uploadResponse = await axios.post(
+          `${HOST}/file/upload`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
             },
-            { headers: { Authorization: `Bearer ${getAuthToken()}` } }
-          )
-          .then((res) => {
-            this.setState({ actionLock: false });
-            if (res.status == 200) {
-              alert("Client Updated!");
-              window.location.href = "/";
-            }
-          });
-      })
-      .catch((err) => {
-        alert(err);
+          }
+        );
+        const orgResponse = await axios.post(`${HOST}/organization/add`, {
+          companyName: this.state.companyName,
+          companyWebsite: this.state.websiteURL,
+          contactName: this.state.primaryContactName,
+          contactEmail: this.state.contactEmail,
+          socials: [],
+          legalDocuments: uploadResponse.data,
+          comments: this.state.comments,
+        });
+
+        if (orgResponse.status === 200) {
+          organizationId = orgResponse.data.id;
+        } else {
+          alert("Cannot create new organization");
+          this.setState({ actionLock: false });
+        }
+      } catch (err) {
+        alert(err.response ? err.response.data : "An error occurred");
         this.setState({ actionLock: false });
+      }
+    }
+    console.log(organizationId);
+    console.log(userId);
+    axios
+      .post(
+        `${HOST}/organization/adduser`,
+        {
+          organizationId,
+          userId,
+        },
+        { headers: { Authorization: `Bearer ${getAuthToken()}` } }
+      )
+      .then((res) => {
+        this.setState({ actionLock: false });
+        if (res.status == 200) {
+          alert("User Linked");
+          window.location.href = "/";
+        }
       });
   };
   render() {
@@ -235,6 +272,132 @@ export default class OnBoard extends Component {
             <div className="col mb-5">
               <form className="form-border">
                 <div className="field-set">
+                  {getAuthLevel() == "admin" && this.state.orgs && (
+                    <div className="row">
+                      <div className="col">
+                        <h5>Organization</h5>
+                        <select
+                          name="org"
+                          onChange={this.handleChange}
+                          className="form-control">
+                          <option
+                            value={"__new_org"}
+                            selected={this.state.org == "__new_org"}>
+                            Create new organization
+                          </option>
+                          {this.state.orgs.map((org) => {
+                            return (
+                              <option
+                                value={org._id}
+                                selected={
+                                  this.state.org == org._id
+                                }>{`${org.companyName}`}</option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                  {this.state.org == "__new_org" && (
+                    <>
+                      <div className="row">
+                        <div className="col-6">
+                          <h5>Company Name</h5>
+                          <input
+                            type="text"
+                            name="companyName"
+                            className={`form-control ${
+                              this.state.errors.companyName && "error"
+                            }`}
+                            placeholder=""
+                            onChange={this.handleChange}
+                          />
+                        </div>
+                        <div className="col-6">
+                          <h5>Primary Contact Name</h5>
+                          <input
+                            type="text"
+                            name="primaryContactName"
+                            className={`form-control ${
+                              this.state.errors.primaryContactName && "error"
+                            }`}
+                            placeholder=""
+                            onChange={this.handleChange}
+                          />
+                        </div>
+                      </div>
+                      <div className="row">
+                        <div className="col-6">
+                          <h5>Website URL</h5>
+                          <input
+                            type="text"
+                            name="websiteURL"
+                            className={`form-control ${
+                              this.state.errors.websiteURL && "error"
+                            }`}
+                            placeholder=""
+                            onChange={this.handleChange}
+                          />
+                        </div>
+                        <div className="col-6">
+                          <h5>Contact Email</h5>
+                          <input
+                            type="text"
+                            name="contactEmail"
+                            className={`form-control ${
+                              this.state.errors.contactEmail && "error"
+                            }`}
+                            placeholder=""
+                            onChange={this.handleChange}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="row">
+                        <div className="col">
+                          <h5>Legal Documents</h5>
+                          <div className="d-create-file">
+                            <p id="file_name">
+                              Upload Your Legal Documents Here
+                            </p>
+                            {this.state.legalDocuments.map((x) => (
+                              <p key={x.name}>{x.name}</p>
+                            ))}
+                            <div className="browse">
+                              <input
+                                type="button"
+                                className="btn-main"
+                                id="get_file"
+                                value="Browse"
+                              />
+                              <input
+                                id="upload_file"
+                                type="file"
+                                multiple
+                                onChange={this.onChangeLegalDocuments}
+                              />
+                            </div>
+                          </div>
+                          <div
+                            id="delete_ld"
+                            className="btn-main hide mt-2"
+                            style={{ backgroundColor: "#900000" }}
+                            onClick={this.deleteLegalDocuments}>
+                            Delete Files
+                          </div>
+                        </div>
+                      </div>
+                      <h5>Company Description</h5>
+                      <textarea
+                        name="comments"
+                        className={`form-control ${
+                          this.state.nameError && "error"
+                        }`}
+                        placeholder=""
+                        onChange={this.handleChange}
+                      />
+                    </>
+                  )}
                   {getAuthLevel() == "admin" && this.state.users && (
                     <div className="row">
                       <div className="col">
@@ -251,9 +414,9 @@ export default class OnBoard extends Component {
                           {this.state.users.map((user) => {
                             return (
                               <option
-                                value={user.username}
+                                value={user._id}
                                 selected={
-                                  this.state.username == user.username
+                                  this.state.username == user._id
                                 }>{`${user.username} - ${user.firstName} ${user.lastName}`}</option>
                             );
                           })}
@@ -341,101 +504,6 @@ export default class OnBoard extends Component {
                       </div>
                     </>
                   )}
-                  <div className="row">
-                    <div className="col-6">
-                      <h5>Company Name</h5>
-                      <input
-                        type="text"
-                        name="companyName"
-                        className={`form-control ${
-                          this.state.errors.companyName && "error"
-                        }`}
-                        placeholder=""
-                        onChange={this.handleChange}
-                      />
-                    </div>
-                    <div className="col-6">
-                      <h5>Primary Contact Name</h5>
-                      <input
-                        type="text"
-                        name="primaryContactName"
-                        className={`form-control ${
-                          this.state.errors.primaryContactName && "error"
-                        }`}
-                        placeholder=""
-                        onChange={this.handleChange}
-                      />
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="col-6">
-                      <h5>Website URL</h5>
-                      <input
-                        type="text"
-                        name="websiteURL"
-                        className={`form-control ${
-                          this.state.errors.websiteURL && "error"
-                        }`}
-                        placeholder=""
-                        onChange={this.handleChange}
-                      />
-                    </div>
-                    <div className="col-6">
-                      <h5>Contact Email</h5>
-                      <input
-                        type="text"
-                        name="contactEmail"
-                        className={`form-control ${
-                          this.state.errors.contactEmail && "error"
-                        }`}
-                        placeholder=""
-                        onChange={this.handleChange}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="row">
-                    <div className="col">
-                      <h5>Legal Documents</h5>
-                      <div className="d-create-file">
-                        <p id="file_name">Upload Your Legal Documents Here</p>
-                        {this.state.legalDocuments.map((x) => (
-                          <p key={x.name}>{x.name}</p>
-                        ))}
-                        <div className="browse">
-                          <input
-                            type="button"
-                            className="btn-main"
-                            id="get_file"
-                            value="Browse"
-                          />
-                          <input
-                            id="upload_file"
-                            type="file"
-                            multiple
-                            onChange={this.onChangeLegalDocuments}
-                          />
-                        </div>
-                      </div>
-                      <div
-                        id="delete_ld"
-                        className="btn-main hide mt-2"
-                        style={{ backgroundColor: "#900000" }}
-                        onClick={this.deleteLegalDocuments}>
-                        Delete Files
-                      </div>
-                    </div>
-                  </div>
-                  <h5>Additional Comments</h5>
-                  <input
-                    type="text"
-                    name="comments"
-                    className={`form-control ${
-                      this.state.nameError && "error"
-                    }`}
-                    placeholder=""
-                    onChange={this.handleChange}
-                  />
                   <input
                     type="button"
                     id="submit"
