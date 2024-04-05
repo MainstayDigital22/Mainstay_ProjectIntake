@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const ticketSchema = new Schema({
   username: { type: String, required: true, ref: "Users" }, //username for accessing our portal
+  organization: { type: mongoose.Schema.Types.ObjectId, ref: "Organizations" },
   title: { type: String, required: true },
   domainURL: { type: String, required: true },
   category: { type: String, required: true }, //range 1 2 3 4 5, each stands for pbc, seo, web maintainace and governace, new website build, and new app build
@@ -65,10 +66,13 @@ const ticketSchema = new Schema({
         isClient: { type: Boolean, required: true },
         message: { type: String, required: true },
         username: { type: String, required: true },
+        time: Date,
       },
     ],
   },
   deadline: { type: Date, required: true },
+  created: { type: Date, default: Date.now, required: true },
+  updated: { type: Date, default: Date.now, required: true },
   SEOKeywords: String,
   comments: String, //anything additional
 });

@@ -11,11 +11,17 @@ export function ChatInfo({ post }) {
     minute: "numeric",
     hour12: true,
   };
+  const dateonly = {
+    timeZone: "America/Chicago",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  };
   return (
     <div className="chat-infos">
       <div className="chat-info-1">
         <div>
-          <p>{new Date(post.deadline).toLocaleString("en-US", options)}</p>
+          <p>{new Date(post.created).toLocaleString("en-US", options)}</p>
         </div>
         <div style={{ marginLeft: 24 }}>
           <p>{post._id}</p>
@@ -29,10 +35,13 @@ export function ChatInfo({ post }) {
       </div>
       <div className="chat-info-3">
         <div>
-          <p>{post.username}</p>
+          <p>{post.organization.companyName}</p>
         </div>
         <div>
-          <p>{new Date(post.deadline).toLocaleString("en-US", options)}</p>
+          <p>
+            Deadline:{" "}
+            {new Date(post.deadline).toLocaleString("en-US", dateonly)}
+          </p>
         </div>
         <div>
           <p>{post.domainURL}</p>

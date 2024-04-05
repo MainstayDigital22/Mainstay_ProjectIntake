@@ -116,7 +116,8 @@ router.route("/update/:username").post(async (req, res) => {
     })
     .catch((err) => res.status(400).json(err));
 });
-+router.route("/onboard").post(async (req, res) => {
+
+router.route("/onboard").post(async (req, res) => {
   const exists = await User.findOne({ username: req.body.username });
   if (!exists) {
     res.status(400).json("User not found");
@@ -167,6 +168,7 @@ router.route("/login").post(async function (req, res) {
       message: "login success",
       token: createToken(req.body.username, userDB.permission),
       user: req.body.username,
+      id: userDB._id,
       perm: userDB.permission,
     });
   }

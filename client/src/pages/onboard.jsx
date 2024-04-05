@@ -3,58 +3,6 @@ import React, { Component } from "react";
 import { createGlobalStyle } from "styled-components";
 import { getAuthLevel, getAuthToken, getAuthUser } from "../components/auth";
 import { HOST } from "../const";
-const GlobalStyles = createGlobalStyle`
-.error {
-  border-color: red;
-}
-.error-message {
-  color: red;
-  font-size: 12px;
-  margin-top: 5px;
-}
-h5{
-  font-weight:500;
-  font-size:18px;
-}
-@media only screen and (max-width: 1199px) {
-    .navbar{
-      background: #403f83;
-    }
-    .navbar .menu-line, .navbar .menu-line1, .navbar .menu-line2{
-      background: #fff;
-    }
-    .item-dropdown .dropdown a{
-      color: #fff !important;
-    }
-  }
-  .gap{
-    padding:10px;
-  }
-  .tab{
-    padding:30px;
-    margin: auto;
-    gap: 30px;
-    border-bottom-left-radius:15px;
-    border-bottom-right-radius:15px;
-    border: 1px solid #dddddd;
-    background-color: #fafafa;
-  }
-  .tabupper{
-    margin: auto;
-    padding-left:10px;
-    padding-top:7px;
-    border-top-left-radius:15px;
-    border-top-right-radius:15px;
-    border: 1px solid #dddddd;
-    background-color: #ffffff;
-  }
-  .no-select {
-    -webkit-user-select: none; 
-    -moz-user-select: none;
-    -ms-user-select: none; 
-    user-select: none;
-  }
-`;
 
 export default class OnBoard extends Component {
   constructor() {
@@ -230,7 +178,7 @@ export default class OnBoard extends Component {
           contactEmail: this.state.contactEmail,
           socials: [],
           legalDocuments: uploadResponse.data,
-          comments: this.state.comments,
+          description: this.state.description,
         });
 
         if (orgResponse.status === 200) {
@@ -266,253 +214,255 @@ export default class OnBoard extends Component {
   render() {
     return (
       <div>
-        <GlobalStyles />
         <div className="container">
-          <div className="row">
-            <div className="col mb-5">
-              <form className="form-border">
-                <div className="field-set">
-                  {getAuthLevel() == "admin" && this.state.orgs && (
-                    <div className="row">
-                      <div className="col">
-                        <h5>Organization</h5>
-                        <select
-                          name="org"
-                          onChange={this.handleChange}
-                          className="form-control">
-                          <option
-                            value={"__new_org"}
-                            selected={this.state.org == "__new_org"}>
-                            Create new organization
-                          </option>
-                          {this.state.orgs.map((org) => {
-                            return (
-                              <option
-                                value={org._id}
-                                selected={
-                                  this.state.org == org._id
-                                }>{`${org.companyName}`}</option>
-                            );
-                          })}
-                        </select>
-                      </div>
-                    </div>
-                  )}
-                  {this.state.org == "__new_org" && (
-                    <>
-                      <div className="row">
-                        <div className="col-6">
-                          <h5>Company Name</h5>
-                          <input
-                            type="text"
-                            name="companyName"
-                            className={`form-control ${
-                              this.state.errors.companyName && "error"
-                            }`}
-                            placeholder=""
-                            onChange={this.handleChange}
-                          />
-                        </div>
-                        <div className="col-6">
-                          <h5>Primary Contact Name</h5>
-                          <input
-                            type="text"
-                            name="primaryContactName"
-                            className={`form-control ${
-                              this.state.errors.primaryContactName && "error"
-                            }`}
-                            placeholder=""
-                            onChange={this.handleChange}
-                          />
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-6">
-                          <h5>Website URL</h5>
-                          <input
-                            type="text"
-                            name="websiteURL"
-                            className={`form-control ${
-                              this.state.errors.websiteURL && "error"
-                            }`}
-                            placeholder=""
-                            onChange={this.handleChange}
-                          />
-                        </div>
-                        <div className="col-6">
-                          <h5>Contact Email</h5>
-                          <input
-                            type="text"
-                            name="contactEmail"
-                            className={`form-control ${
-                              this.state.errors.contactEmail && "error"
-                            }`}
-                            placeholder=""
-                            onChange={this.handleChange}
-                          />
-                        </div>
-                      </div>
-
+          <h1 className="page-title">Onboarding</h1>
+          <div className="form-panel">
+            <div className="row">
+              <div className="col mb-5">
+                <form className="form-border">
+                  <div className="field-set">
+                    {getAuthLevel() == "admin" && this.state.orgs && (
                       <div className="row">
                         <div className="col">
-                          <h5>Legal Documents</h5>
-                          <div className="d-create-file">
-                            <p id="file_name">
-                              Upload Your Legal Documents Here
-                            </p>
-                            {this.state.legalDocuments.map((x) => (
-                              <p key={x.name}>{x.name}</p>
-                            ))}
-                            <div className="browse">
-                              <input
-                                type="button"
-                                className="btn-main"
-                                id="get_file"
-                                value="Browse"
-                              />
-                              <input
-                                id="upload_file"
-                                type="file"
-                                multiple
-                                onChange={this.onChangeLegalDocuments}
-                              />
+                          <h5>Organization</h5>
+                          <select
+                            name="org"
+                            onChange={this.handleChange}
+                            className="form-control">
+                            <option
+                              value={"__new_org"}
+                              selected={this.state.org == "__new_org"}>
+                              Create new organization
+                            </option>
+                            {this.state.orgs.map((org) => {
+                              return (
+                                <option
+                                  value={org._id}
+                                  selected={
+                                    this.state.org == org._id
+                                  }>{`${org.companyName}`}</option>
+                              );
+                            })}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                    {this.state.org == "__new_org" && (
+                      <>
+                        <div className="row">
+                          <div className="col-6">
+                            <h5>Company Name</h5>
+                            <input
+                              type="text"
+                              name="companyName"
+                              className={`form-control ${
+                                this.state.errors.companyName && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col-6">
+                            <h5>Primary Contact Name</h5>
+                            <input
+                              type="text"
+                              name="primaryContactName"
+                              className={`form-control ${
+                                this.state.errors.primaryContactName && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                        </div>
+                        <div className="row">
+                          <div className="col-6">
+                            <h5>Website URL</h5>
+                            <input
+                              type="text"
+                              name="websiteURL"
+                              className={`form-control ${
+                                this.state.errors.websiteURL && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col-6">
+                            <h5>Contact Email</h5>
+                            <input
+                              type="text"
+                              name="contactEmail"
+                              className={`form-control ${
+                                this.state.errors.contactEmail && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="row">
+                          <div className="col">
+                            <h5>Legal Documents</h5>
+                            <div className="d-create-file">
+                              <p id="file_name">
+                                Upload Your Legal Documents Here
+                              </p>
+                              {this.state.legalDocuments.map((x) => (
+                                <p key={x.name}>{x.name}</p>
+                              ))}
+                              <div className="browse">
+                                <input
+                                  type="button"
+                                  className="btn-main"
+                                  id="get_file"
+                                  value="Browse"
+                                />
+                                <input
+                                  id="upload_file"
+                                  type="file"
+                                  multiple
+                                  onChange={this.onChangeLegalDocuments}
+                                />
+                              </div>
+                            </div>
+                            <div
+                              id="delete_ld"
+                              className="btn-main hide mt-2"
+                              style={{ backgroundColor: "#900000" }}
+                              onClick={this.deleteLegalDocuments}>
+                              Delete Files
                             </div>
                           </div>
-                          <div
-                            id="delete_ld"
-                            className="btn-main hide mt-2"
-                            style={{ backgroundColor: "#900000" }}
-                            onClick={this.deleteLegalDocuments}>
-                            Delete Files
+                        </div>
+                        <h5>Company Description</h5>
+                        <textarea
+                          name="description"
+                          className={`form-control ${
+                            this.state.nameError && "error"
+                          }`}
+                          placeholder=""
+                          onChange={this.handleChange}
+                        />
+                      </>
+                    )}
+                    {getAuthLevel() == "admin" && this.state.users && (
+                      <div className="row">
+                        <div className="col">
+                          <h5>User</h5>
+                          <select
+                            name="username"
+                            onChange={this.handleChange}
+                            className="form-control">
+                            <option
+                              value={"__new_user"}
+                              selected={this.state.username == "__new_user"}>
+                              Create new user
+                            </option>
+                            {this.state.users.map((user) => {
+                              return (
+                                <option
+                                  value={user._id}
+                                  selected={
+                                    this.state.username == user._id
+                                  }>{`${user.username} - ${user.firstName} ${user.lastName}`}</option>
+                              );
+                            })}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                    {this.state.username == "__new_user" && (
+                      <>
+                        <div className="row">
+                          <div className="col-4">
+                            <h5>Username</h5>
+                            <input
+                              type="text"
+                              name="newusername"
+                              className={`form-control ${
+                                this.state.errors.newusername && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col-4">
+                            <h5>First Name</h5>
+                            <input
+                              type="text"
+                              name="firstName"
+                              className={`form-control ${
+                                this.state.errors.firstName && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col-4">
+                            <h5>Last Name</h5>
+                            <input
+                              type="text"
+                              name="lastName"
+                              className={`form-control ${
+                                this.state.errors.lastName && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
                           </div>
                         </div>
-                      </div>
-                      <h5>Company Description</h5>
-                      <textarea
-                        name="comments"
-                        className={`form-control ${
-                          this.state.nameError && "error"
-                        }`}
-                        placeholder=""
-                        onChange={this.handleChange}
-                      />
-                    </>
-                  )}
-                  {getAuthLevel() == "admin" && this.state.users && (
-                    <div className="row">
-                      <div className="col">
-                        <h5>User</h5>
-                        <select
-                          name="username"
-                          onChange={this.handleChange}
-                          className="form-control">
-                          <option
-                            value={"__new_user"}
-                            selected={this.state.username == "__new_user"}>
-                            Create new user
-                          </option>
-                          {this.state.users.map((user) => {
-                            return (
-                              <option
-                                value={user._id}
-                                selected={
-                                  this.state.username == user._id
-                                }>{`${user.username} - ${user.firstName} ${user.lastName}`}</option>
-                            );
-                          })}
-                        </select>
-                      </div>
-                    </div>
-                  )}
-                  {this.state.username == "__new_user" && (
-                    <>
-                      <div className="row">
-                        <div className="col-4">
-                          <h5>Username</h5>
-                          <input
-                            type="text"
-                            name="newusername"
-                            className={`form-control ${
-                              this.state.errors.newusername && "error"
-                            }`}
-                            placeholder=""
-                            onChange={this.handleChange}
-                          />
+                        <div className="row">
+                          <div className="col-4">
+                            <h5>Email</h5>
+                            <input
+                              type="text"
+                              name="email"
+                              className={`form-control ${
+                                this.state.errors.email && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col-4">
+                            <h5>Password</h5>
+                            <input
+                              type="text"
+                              name="password"
+                              className={`form-control ${
+                                this.state.errors.password && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
+                          <div className="col-4">
+                            <h5>Phone</h5>
+                            <input
+                              type="text"
+                              name="phone"
+                              className={`form-control ${
+                                this.state.errors.phone && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </div>
                         </div>
-                        <div className="col-4">
-                          <h5>First Name</h5>
-                          <input
-                            type="text"
-                            name="firstName"
-                            className={`form-control ${
-                              this.state.errors.firstName && "error"
-                            }`}
-                            placeholder=""
-                            onChange={this.handleChange}
-                          />
-                        </div>
-                        <div className="col-4">
-                          <h5>Last Name</h5>
-                          <input
-                            type="text"
-                            name="lastName"
-                            className={`form-control ${
-                              this.state.errors.lastName && "error"
-                            }`}
-                            placeholder=""
-                            onChange={this.handleChange}
-                          />
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-4">
-                          <h5>Email</h5>
-                          <input
-                            type="text"
-                            name="email"
-                            className={`form-control ${
-                              this.state.errors.email && "error"
-                            }`}
-                            placeholder=""
-                            onChange={this.handleChange}
-                          />
-                        </div>
-                        <div className="col-4">
-                          <h5>Password</h5>
-                          <input
-                            type="text"
-                            name="password"
-                            className={`form-control ${
-                              this.state.errors.password && "error"
-                            }`}
-                            placeholder=""
-                            onChange={this.handleChange}
-                          />
-                        </div>
-                        <div className="col-4">
-                          <h5>Phone</h5>
-                          <input
-                            type="text"
-                            name="phone"
-                            className={`form-control ${
-                              this.state.errors.phone && "error"
-                            }`}
-                            placeholder=""
-                            onChange={this.handleChange}
-                          />
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  <input
-                    type="button"
-                    id="submit"
-                    onClick={this.submit}
-                    className="btn-main"
-                    value="Update Client"
-                  />
-                </div>
-              </form>
+                      </>
+                    )}
+                    <input
+                      type="button"
+                      id="submit"
+                      onClick={this.submit}
+                      className="btn-main"
+                      value="Update Client"
+                    />
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>

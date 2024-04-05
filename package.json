@@ -3,6 +3,6 @@
     "concurrently": "^8.2.2"
   },
   "scripts": {
-    "start": "concurrently \"cd server && node server\"  \"cd client && npm start\""
+    "start": "concurrently \"cd server && nodemon server\"  \"cd client && npm start\""
   }
 }

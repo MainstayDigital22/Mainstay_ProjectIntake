@@ -12,7 +12,7 @@ import {
 } from "../assets";
 import { getAuthLevel, getAuthUser, getAuthToken } from "./auth";
 
-export function Chat({ post }) {
+export function Chat({ post, callback }) {
   const [chat, setChat] = useState(post.chat);
   const [isSendingChat, setIsSendingChat] = useState(false);
   const [chatInput, setChatInput] = useState("");
@@ -22,6 +22,8 @@ export function Chat({ post }) {
           type: "text",
           user: msg.username,
           text: msg.message,
+          time: msg.time,
+          isClient: msg.isClient,
         }))
       : undefined;
   const handleInputChange = (e) => {
@@ -39,6 +41,7 @@ export function Chat({ post }) {
       isClient: getAuthLevel() === "client",
       message: text,
       username: getAuthUser(),
+      time: Date.now(),
     };
 
     // Optimistic UI update
@@ -62,40 +65,77 @@ export function Chat({ post }) {
       // Handle error (e.g., rollback optimistic update)
     } finally {
       setIsSendingChat(false);
+      callback();
     }
+  };
+  const options = {
+    timeZone: "America/Chicago",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
   };
   return (
     <div className="chat-messenger">
       {message &&
-        message.map((msg) => (
-          <div className="chat-msg">
-            <div style={{ display: "flex", gap: 12 }}>
-              <img src={profilePlaceholder} />
+        message.map((msg) => {
+          const isRight = msg.isClient == (getAuthLevel() === "client");
+          return (
+            <div className="chat-msg">
               <div
                 style={{
                   display: "flex",
-                  flexDirection: "column",
-                  width: "calc(100% - 60px)",
+                  gap: 12,
+                  flexDirection: isRight ? "row-reverse" : "row",
                 }}>
-                <div className="chat-msg-title">
-                  <h3>{msg.user}</h3>
-                  <img src={threedots} />
-                </div>
-                <div className="chat-msg-date">
-                  <div>
-                    <p>{msg.user}</p>
+                {isRight && (
+                  <div className="threedots">
+                    <img src={threedots} />
                   </div>
-                  <div>
-                    <p>{msg.user}</p>
+                )}
+                <img src={profilePlaceholder} />
+                <div
+                  style={{
+                    display: "flex",
+
+                    flexDirection: "column",
+                    width: "calc(100% - 85px)",
+                  }}>
+                  <div
+                    className="chat-msg-title"
+                    style={{ flexDirection: isRight ? "row-reverse" : "row" }}>
+                    <h3>{msg.user}</h3>
+                  </div>
+                  <div
+                    className="chat-msg-date"
+                    style={{ flexDirection: isRight ? "row-reverse" : "row" }}>
+                    <div>
+                      <p>
+                        {new Date(msg.time).toLocaleString("en-US", options)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="chat-msg-description">
+                    <p
+                      style={{
+                        textAlign: isRight ? "right" : "left",
+                      }}>
+                      {msg.text}
+                    </p>
                   </div>
                 </div>
-                <div className="chat-msg-description">
-                  <p>{msg.text}</p>
-                </div>
+
+                {!isRight && (
+                  <div className="threedots">
+                    <img src={threedots} />
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       <div className="chat-input">
         <div style={{ display: "flex", gap: 12 }}>
           <img src={profilePlaceholder} />
@@ -105,7 +145,12 @@ export function Chat({ post }) {
               flexDirection: "column",
               width: "100%",
             }}>
-            <textarea value={chatInput} onChange={handleInputChange} />
+            <textarea
+              value={chatInput}
+              onChange={handleInputChange}
+              disabled={post.status === "closed"}
+              placeholder={post.status === "closed" ? "Ticket is closed" : ""}
+            />
             <form
               onSubmit={handleFormSubmit}
               style={{

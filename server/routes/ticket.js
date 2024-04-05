@@ -20,6 +20,7 @@ router.route("/").post(async (req, res) => {
     }
   }
   Ticket.find(query)
+    .populate("organization")
     .then((tickets) => res.json(tickets))
     .catch((err) => res.status(400).json("Error: " + err));
 });
@@ -42,6 +43,7 @@ router.route("/add").post(async (req, res) => {
     domain: req.body.domain,
     SEOKeywords: req.body.SEOKeywords,
     comments: req.body.comments,
+    organization: req.body.organization,
   });
 
   newTicket
@@ -75,6 +77,7 @@ router.route("/:_id").delete(async (req, res) => {
 });
 router.route("/:_id").get(async (req, res) => {
   Ticket.find({ _id: req.params._id })
+    .populate("organization")
     .then((tickets) => res.json(tickets))
     .catch((err) => res.status(400).json("Error: " + err));
 });
@@ -102,6 +105,7 @@ router.route("/update/:id").post(async (req, res) => {
     "comments",
     "status",
     "chat",
+    "organization",
   ];
 
   fieldsToUpdate.forEach((field) => {

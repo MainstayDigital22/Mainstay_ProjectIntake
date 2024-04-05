@@ -2,7 +2,14 @@ import axios from "axios";
 import { Chat } from "../components/chat";
 import "bootstrap/dist/css/bootstrap.min.css";
 import React, { Component } from "react";
-import { asterisk, profilePlaceholder } from "../assets";
+import {
+  asterisk,
+  closeTicket,
+  deleteTicket,
+  editTicket,
+  openTicket,
+  profilePlaceholder,
+} from "../assets";
 import { getAuthToken, getAuthUser, getAuthLevel } from "../components/auth";
 import { HOST } from "../const";
 import { Label } from "../components/label";
@@ -48,11 +55,12 @@ class Review extends Component {
       })
       .catch((err) => alert(err.response.data));
   };
-  async updatePosts() {
+  updatePosts = async () => {
     const filters = [];
     if (this.state.showAction) filters.push("new", "pending review");
     if (this.state.showProgress) filters.push("pending response");
     if (this.state.showClosed) filters.push("completed", "closed");
+    const len = this.state.posts.length;
 
     await axios
       .post(
@@ -77,7 +85,9 @@ class Review extends Component {
         const closedCount = posts.filter(
           (post) => post.status === "completed" || post.status === "closed"
         ).length;
-
+        if (len != posts.length) {
+          this.setState({ open: -1 });
+        }
         this.setState({
           posts: posts.filter((post) => filters.includes(post.status)),
           actionNeededCount,
@@ -89,7 +99,7 @@ class Review extends Component {
       .catch((err) => {
         console.log(err.response || err);
       });
-  }
+  };
 
   getPosts() {
     return this.state.posts;
@@ -97,6 +107,112 @@ class Review extends Component {
   componentDidMount() {
     this.updatePosts();
   }
+
+  archive = () => {
+    if (this.state.actionLock) {
+      return;
+    }
+    this.setState({
+      actionLock: true,
+    });
+    axios
+      .post(
+        `${HOST}/ticket/update/${this.state.id}`,
+        { status: "archived" },
+        { headers: { Authorization: `Bearer ${getAuthToken()}` } }
+      )
+      .then((res) => {
+        console.log(res);
+        window.location.reload(false);
+        alert("Ticket Archived!");
+      })
+      .catch((err) => {
+        console.log(err.response || err);
+      });
+  };
+  open = (id, chat) => {
+    if (this.state.actionLock) {
+      return;
+    }
+    this.setState({
+      actionLock: true,
+    });
+    axios
+      .post(
+        `${HOST}/ticket/update/${id}`,
+        {
+          status:
+            chat.length == 0
+              ? "new"
+              : chat[chat.length - 1].isClient
+              ? "pending review"
+              : "pending response",
+        },
+        { headers: { Authorization: `Bearer ${getAuthToken()}` } }
+      )
+      .then((res) => {
+        console.log(res);
+        this.state.actionLock = false;
+        this.updatePosts();
+        alert("Ticket Reopened!");
+      })
+      .catch((err) => {
+        console.log(err.response || err);
+        this.state.actionLock = false;
+      });
+  };
+  close = (id) => {
+    if (this.state.actionLock) {
+      return;
+    }
+    this.setState({
+      actionLock: true,
+    });
+    axios
+      .post(
+        `${HOST}/ticket/update/${id}`,
+        { status: "closed" },
+        { headers: { Authorization: `Bearer ${getAuthToken()}` } }
+      )
+      .then((res) => {
+        console.log(res);
+        this.updatePosts();
+        alert("Ticket Closed!");
+        this.state.actionLock = false;
+      })
+      .catch((err) => {
+        console.log(err.response || err);
+        this.state.actionLock = false;
+      });
+  };
+  delete = (id) => {
+    if (!window.confirm(`Are you sure you want to delete this ticket?`)) {
+      return;
+    }
+    if (this.state.actionLock) {
+      return;
+    }
+    this.setState({
+      actionLock: true,
+    });
+    axios
+      .delete(`${HOST}/ticket/${id}`, {
+        headers: { Authorization: `Bearer ${getAuthToken()}` },
+      })
+      .then((res) => {
+        console.log(res);
+        alert("Ticket Deleted!");
+        this.updatePosts();
+        this.state.actionLock = false;
+      })
+      .catch((err) => {
+        console.log(err.response || err);
+        this.state.actionLock = false;
+      });
+  };
+  edit = (id) => {
+    window.location.replace(`/edit/${id}`);
+  };
 
   render() {
     return (
@@ -206,7 +322,12 @@ class Review extends Component {
                             ? this.setState({ open: index })
                             : this.setState({ open: -1 });
                         }}>
-                        <div style={{ display: "inline-flex", gap: 16 }}>
+                        <div
+                          style={{
+                            display: "inline-flex",
+                            gap: 16,
+                            minWidth: "100%",
+                          }}>
                           <div className="ticket-preview">
                             <img src={profilePlaceholder} />
                             <Label status={ticket.status} />
@@ -224,6 +345,56 @@ class Review extends Component {
                               {ticket.domainURL}
                             </p>
                           </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              marginLeft: "auto",
+                            }}>
+                            {ticket.status == "closed" ? (
+                              <div
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  this.open(ticket._id, ticket.chat);
+                                }}>
+                                <img
+                                  style={{ cursor: "pointer" }}
+                                  src={openTicket}
+                                />
+                              </div>
+                            ) : (
+                              <div
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  this.close(ticket._id);
+                                }}>
+                                <img
+                                  style={{ cursor: "pointer" }}
+                                  src={closeTicket}
+                                />
+                              </div>
+                            )}
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                this.edit(ticket._id);
+                              }}>
+                              <img
+                                style={{ cursor: "pointer" }}
+                                src={editTicket}
+                              />
+                            </div>
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                this.delete(ticket._id);
+                              }}>
+                              <img
+                                style={{ cursor: "pointer" }}
+                                src={deleteTicket}
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     );
@@ -231,10 +402,13 @@ class Review extends Component {
                 </div>
               </div>
 
-              {this.state.open != -1 && (
+              {this.state.open != -1 && this.state.posts[this.state.open] && (
                 <div className="chat-panel">
                   <ChatInfo post={this.state.posts[this.state.open]} />
-                  <Chat post={this.state.posts[this.state.open]} />
+                  <Chat
+                    post={this.state.posts[this.state.open]}
+                    callback={this.updatePosts}
+                  />
                 </div>
               )}
             </div>

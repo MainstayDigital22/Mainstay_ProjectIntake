@@ -8,8 +8,8 @@ const organizationSchema = new Schema({
   contactEmail: { type: String, required: true },
   socials: [String],
   legalDocuments: [String], //urls
-  comments: String,
-  users: { type: [mongoose.Schema.Types.ObjectId], ref: "Users" },
+  description: String,
+  users: [{ type: mongoose.Schema.Types.ObjectId, ref: "Users" }],
 });
 
 const Organization = mongoose.model("Organizations", organizationSchema);

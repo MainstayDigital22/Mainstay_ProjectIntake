@@ -2,7 +2,7 @@ const router = require("express").Router();
 const Organization = require("../schemas/organization");
 let User = require("../schemas/user");
 const { auth } = require("./auth");
-
+const mongoose = require("mongoose");
 router.route("/add").post(async (req, res) => {
   /*if ((await auth(req, ["admin", "staff"])) !== 1) {
     res.status(403).json("Auth Error");
@@ -15,7 +15,7 @@ router.route("/add").post(async (req, res) => {
     contactEmail: req.body.contactEmail,
     socials: req.body.socials,
     legalDocuments: req.body.legalDocuments,
-    comments: req.body.comments,
+    description: req.body.description,
   });
 
   newOrganization
@@ -32,6 +32,14 @@ router.route("/").get(async function (req, res) {
     return;
   }
   Organization.find()
+    .then((orgs) => res.json(orgs))
+    .catch((err) => res.status(400).json("Error: " + err));
+});
+
+router.route("/userorgs/:userid").get(async function (req, res) {
+  const userId = req.params.userid;
+
+  Organization.find({ users: mongoose.Types.ObjectId(userId) })
     .then((orgs) => res.json(orgs))
     .catch((err) => res.status(400).json("Error: " + err));
 });
@@ -67,29 +75,43 @@ router.route("/addUser").post(async (req, res) => {
 });
 
 router.route("/withusers").get(async (req, res) => {
-  /*if ((await auth(req, ["admin", "staff"])) !== 1) {
-    res.status(403).json("Auth Error");
-    return;
-  }*/
   try {
     const orgsWithUsers = await Organization.find()
+      .populate({
+        path: "users",
+        select: "-password",
+      })
+      .exec();
+
+    res.json(
+      orgsWithUsers.map((org) => ({
+        ...org.toObject(),
+        users: org.users,
+      }))
+    );
+  } catch (err) {
+    res.status(400).json("Error: " + err);
+  }
+});
+
+router.route("/withusers/:id").get(async (req, res) => {
+  try {
+    const org = await Organization.findOne({ _id: req.params.id })
       .populate({
         path: "users",
         select: "username firstName lastName -_id", // Select only the username, firstName, lastName fields and exclude _id
       })
       .exec();
 
-    res.json(
-      orgsWithUsers.map((org) => ({
-        _id: org._id,
-        companyName: org.companyName,
-        users: org.users.map((user) => ({
-          username: user.username,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        })),
-      }))
-    );
+    res.json({
+      _id: org._id,
+      companyName: org.companyName,
+      users: org.users.map((user) => ({
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      })),
+    });
   } catch (err) {
     res.status(400).json("Error: " + err);
   }

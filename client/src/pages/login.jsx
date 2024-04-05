@@ -25,11 +25,7 @@ const Login = () => {
           const json = await JSON.parse(localStorage.getItem("user"));
           console.log(json);
           axios.get(`${HOST}/user/${res.data.user}`).then((res2) => {
-            if (res2.data[0].onboard) {
-              window.location.href = "/";
-            } else {
-              window.location.href = "/onboard";
-            }
+            window.location.href = "/review";
           });
         }
       })

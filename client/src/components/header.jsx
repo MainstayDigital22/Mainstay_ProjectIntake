@@ -8,19 +8,20 @@ import {
   planeIcon,
   textLogo,
   ticketIcon,
+  orgIcon,
 } from "../assets";
 import { getAuthLevel, getAuthToken, getAuthUser } from "../components/auth";
 import { HOST } from "../const";
 
 const navLinks = [
-  { href: "/", text: "Home", icon: homeIcon },
+  // { href: "/", text: "Home", icon: homeIcon },
   { href: "/review", text: "Review", icon: editIcon },
-  { href: "/onboard", text: "Onboard", icon: planeIcon },
   { href: "/new-ticket", text: "New Ticket", icon: ticketIcon },
   ...(getAuthLevel() === "admin"
     ? [
+        { href: "/onboard", text: "Onboard", icon: planeIcon },
         { href: "/users", text: "Users", icon: personIcon },
-        { href: "/orgs", text: "Organizations", icon: personIcon },
+        { href: "/orgs", text: "Organizations", icon: orgIcon },
       ]
     : []),
 ];

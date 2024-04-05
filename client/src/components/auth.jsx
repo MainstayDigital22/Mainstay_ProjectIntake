@@ -16,6 +16,15 @@ export const getAuthUser = () => {
   const user = storage.user;
   return user;
 };
+export const getAuthId = () => {
+  if (!localStorage.getItem("user")) {
+    window.open(`/login`, "_self");
+    return;
+  }
+  const storage = JSON.parse(localStorage.getItem("user"));
+  const id = storage.id;
+  return id;
+};
 export const getAuthLevel = () => {
   const ignoredPaths = ["/403", "/login", "/signup"];
   if (

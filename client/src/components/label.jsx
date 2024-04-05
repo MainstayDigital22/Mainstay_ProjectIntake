@@ -8,7 +8,7 @@ export function Label({ status }) {
           status == "pending response"
             ? "#EAC6B7"
             : status == "pending review"
-            ? "#EAC6B7"
+            ? "#EADCAB"
             : status == "new"
             ? "#C7EAB7"
             : "#DEE4EF",
@@ -22,7 +22,7 @@ export function Label({ status }) {
             status == "pending response"
               ? "#625D4D"
               : status == "pending review"
-              ? "#EADCAB"
+              ? "#625D4D"
               : status == "new"
               ? "#56873F"
               : "#4D70B1",
@@ -34,7 +34,7 @@ export function Label({ status }) {
             status == "pending response"
               ? "#625D4D"
               : status == "pending review"
-              ? "#EADCAB"
+              ? "#624D4D"
               : status == "new"
               ? "#56873F"
               : "#4D70B1",
