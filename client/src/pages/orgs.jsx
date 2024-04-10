@@ -1,5 +1,6 @@
 import React from "react";
 import axios from "axios";
+import { HOST } from "../const";
 
 const styles = {
   container: {
@@ -48,7 +49,7 @@ class Orgs extends React.Component {
 
   fetchOrganizations = () => {
     axios
-      .get("http://localhost:8080/organization/withusers")
+      .get(`${HOST}/organization/withusers`)
       .then((response) => {
         this.setState({
           organizations: response.data,
