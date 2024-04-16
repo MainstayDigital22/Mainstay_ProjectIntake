@@ -9,14 +9,35 @@ export default class OnBoard extends Component {
     super();
     this.state = {
       errors: [],
+      categories: [],
       legalDocuments: [],
+      brandingFiles: [],
+      brandingDesignDocuments: [],
       actionLock: false,
       username: getAuthUser(),
     };
   }
   handleChange = (event) => {
     const { name, value } = event.target;
-    this.setState({ [name]: value });
+    const nameParts = name.split(".");
+    if (nameParts.length > 1) {
+      this.setState((prevState) => {
+        let updatedState = { ...prevState };
+        let currentPart = updatedState;
+
+        for (let i = 0; i < nameParts.length - 1; i++) {
+          if (!currentPart[nameParts[i]]) {
+            currentPart[nameParts[i]] = {};
+          }
+          currentPart = currentPart[nameParts[i]];
+        }
+        currentPart[nameParts[nameParts.length - 1]] = value;
+
+        return updatedState;
+      });
+    } else {
+      this.setState({ [name]: value });
+    }
   };
   deleteLegalDocuments = () => {
     this.setState({ legalDocuments: [] });
@@ -61,6 +82,21 @@ export default class OnBoard extends Component {
         });
       });
   }
+  handleCheckboxChange = (event) => {
+    const target = event.target;
+    const value = target.value;
+    const checked = target.checked;
+
+    this.setState((prevState) => {
+      const newCategories = new Set(prevState.categories);
+      if (checked) {
+        newCategories.add(value);
+      } else {
+        newCategories.delete(value);
+      }
+      return { categories: Array.from(newCategories) };
+    });
+  };
   validateForm = () => {
     const errors = {};
     let formIsValid = true;
@@ -117,7 +153,40 @@ export default class OnBoard extends Component {
     this.setState({ errors });
     return formIsValid;
   };
-
+  deleteDesignDocuments = () => {
+    this.setState({ brandingDesignDocuments: [] });
+    document.getElementById("delete_dd").classList.add("hide");
+    document.getElementById("delete_dd").classList.remove("show");
+  };
+  onChangeDesignDocuments = async (e) => {
+    const brandingDesignDocuments = Array.from(e.target.files);
+    await this.setState({ brandingDesignDocuments });
+    const deleteBtn = document.getElementById("delete_dd");
+    if (this.state.brandingDesignDocuments.length > 0) {
+      deleteBtn.classList.add("show");
+      deleteBtn.classList.remove("hide");
+    } else {
+      deleteBtn.classList.remove("show");
+      deleteBtn.classList.add("hide");
+    }
+  };
+  deleteBrandingFiles = () => {
+    this.setState({ brandingFiles: [] });
+    document.getElementById("delete_bf").classList.add("hide");
+    document.getElementById("delete_bf").classList.remove("show");
+  };
+  onChangeBrandingFiles = async (e) => {
+    const brandingFiles = Array.from(e.target.files);
+    await this.setState({ brandingFiles });
+    const deleteBtn = document.getElementById("delete_bf");
+    if (this.state.brandingFiles.length > 0) {
+      deleteBtn.classList.add("show");
+      deleteBtn.classList.remove("hide");
+    } else {
+      deleteBtn.classList.remove("show");
+      deleteBtn.classList.add("hide");
+    }
+  };
   submit = async () => {
     if (this.state.actionLock) {
       return;
@@ -129,7 +198,14 @@ export default class OnBoard extends Component {
     this.setState({
       actionLock: true,
     });
+
     let formData = new FormData();
+    for (let i = 0; i < this.state.brandingFiles.length; i += 1) {
+      formData.append("files", this.state.brandingFiles[i]);
+    }
+    for (let i = 0; i < this.state.brandingDesignDocuments.length; i += 1) {
+      formData.append("files", this.state.brandingDesignDocuments[i]);
+    }
     for (let i = 0; i < this.state.legalDocuments.length; i += 1) {
       formData.append("files", this.state.legalDocuments[i]);
     }
@@ -171,14 +247,46 @@ export default class OnBoard extends Component {
             },
           }
         );
+        console.log(uploadResponse);
         const orgResponse = await axios.post(`${HOST}/organization/add`, {
           companyName: this.state.companyName,
           companyWebsite: this.state.websiteURL,
           contactName: this.state.primaryContactName,
           contactEmail: this.state.contactEmail,
           socials: [],
-          legalDocuments: uploadResponse.data,
+          legalDocuments:
+            this.state.legalDocuments.length != 0
+              ? uploadResponse.data.slice(
+                  this.state.brandingFiles.length +
+                    this.state.brandingDesignDocuments.length,
+                  this.state.brandingFiles.length +
+                    this.state.brandingDesignDocuments.length +
+                    this.state.legalDocuments.length
+                )
+              : undefined,
           description: this.state.description,
+          categories: this.state.categories,
+          branding: {
+            files:
+              this.state.brandingFiles.length != 0
+                ? uploadResponse.data.slice(0, this.state.brandingFiles.length)
+                : undefined,
+            colorCodes: this.state.branding?.colorCodes,
+            fonts: this.state.branding?.fonts,
+            designDocument:
+              this.state.brandingDesignDocuments.length != 0
+                ? uploadResponse.data.slice(
+                    this.state.brandingFiles.length,
+                    this.state.brandingFiles.length +
+                      this.state.brandingDesignDocuments.length
+                  )
+                : undefined,
+          },
+          hosting: this.state.hosting,
+          FTP: this.state.FTP,
+          controlPanel: this.state.controlPanel,
+          domain: this.state.domain,
+          SEOKeywords: this.state.seoKeywords,
         });
 
         if (orgResponse.status === 200) {
@@ -188,7 +296,7 @@ export default class OnBoard extends Component {
           this.setState({ actionLock: false });
         }
       } catch (err) {
-        alert(err.response ? err.response.data : "An error occurred");
+        alert(err);
         this.setState({ actionLock: false });
       }
     }
@@ -301,7 +409,6 @@ export default class OnBoard extends Component {
                             />
                           </div>
                         </div>
-
                         <div className="row">
                           <div className="col">
                             <h5>Legal Documents</h5>
@@ -336,6 +443,437 @@ export default class OnBoard extends Component {
                             </div>
                           </div>
                         </div>
+                        <h5 style={{ marginTop: 12 }}>Services</h5>
+                        <div className="row" style={{ marginBottom: 12 }}>
+                          <div className="col">
+                            <div className="form-check">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                value="1"
+                                id="pbc"
+                                onChange={this.handleCheckboxChange}
+                              />
+                              <label className="form-check-label" htmlFor="pbc">
+                                PBC
+                              </label>
+                            </div>
+                          </div>
+                          <div className="col">
+                            <div className="form-check">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                value="2"
+                                id="seo"
+                                onChange={this.handleCheckboxChange}
+                              />
+                              <label className="form-check-label" htmlFor="seo">
+                                SEO
+                              </label>
+                            </div>
+                          </div>
+                          <div className="col">
+                            <div className="form-check">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                value="3"
+                                id="websiteMaintenance"
+                                onChange={this.handleCheckboxChange}
+                              />
+                              <label
+                                className="form-check-label"
+                                htmlFor="websiteMaintenance">
+                                Website Maintenance
+                              </label>
+                            </div>
+                          </div>
+                          <div className="col">
+                            <div className="form-check">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                value="4"
+                                id="newWebsiteBuild"
+                                onChange={this.handleCheckboxChange}
+                              />
+                              <label
+                                className="form-check-label"
+                                htmlFor="newWebsiteBuild">
+                                New Website Build
+                              </label>
+                            </div>
+                          </div>
+                          <div className="col">
+                            <div className="form-check">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                value="5"
+                                id="newAppBuild"
+                                onChange={this.handleCheckboxChange}
+                              />
+                              <label
+                                className="form-check-label"
+                                htmlFor="newAppBuild">
+                                New App Build
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                        {(this.state.categories.includes("4") ||
+                          this.state.categories.includes("5")) && (
+                          <div style={{ marginBottom: 20 }} id="dropdown">
+                            <div className="tabupper no-select">
+                              <h5 className="dropdown-label">Branding</h5>
+                            </div>
+                            <div className="tab no-select">
+                              <div className="row">
+                                <div className="col">
+                                  <h5>Color Codes</h5>
+                                  <input
+                                    type="text"
+                                    name="branding.colorCodes"
+                                    defaultValue={
+                                      this.state.branding?.colorCodes
+                                    }
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                                <div className="col">
+                                  <h5>Fonts</h5>
+                                  <input
+                                    type="text"
+                                    name="branding.fonts"
+                                    defaultValue={this.state.branding?.fonts}
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                              </div>
+                              <div className="row">
+                                <div className="col">
+                                  <h5>Logos</h5>
+                                  <div className="d-create-file">
+                                    <p id="file_name">
+                                      Upload Your Branding Files Here
+                                    </p>
+                                    {this.state.brandingFiles.map((x) => (
+                                      <p key={x.name}>{x.name}</p>
+                                    ))}
+                                    <div className="browse">
+                                      <input
+                                        type="button"
+                                        className="btn-main"
+                                        id="get_file"
+                                        value="Browse"
+                                      />
+                                      <input
+                                        id="upload_file"
+                                        type="file"
+                                        multiple
+                                        onChange={this.onChangeBrandingFiles}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div
+                                    id="delete_bf"
+                                    className="btn-main hide mt-2"
+                                    style={{ backgroundColor: "#900000" }}
+                                    onClick={this.deleteBrandingFiles}>
+                                    Delete Files
+                                  </div>
+                                </div>
+                                <div className="col">
+                                  <h5>Branding Documents</h5>
+                                  <div className="d-create-file">
+                                    <p id="file_name">
+                                      Upload Your Designs Here
+                                    </p>
+                                    {this.state.brandingDesignDocuments.map(
+                                      (x) => (
+                                        <p key={x.name}>{x.name}</p>
+                                      )
+                                    )}
+                                    <div className="browse">
+                                      <input
+                                        type="button"
+                                        className="btn-main"
+                                        id="get_file"
+                                        value="Browse"
+                                      />
+                                      <input
+                                        id="upload_file"
+                                        type="file"
+                                        multiple
+                                        onChange={this.onChangeDesignDocuments}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div
+                                    id="delete_dd"
+                                    className="btn-main hide mt-2"
+                                    style={{ backgroundColor: "#900000" }}
+                                    onClick={this.deleteDesignDocuments}>
+                                    Delete Files
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {(this.state.categories.includes("3") ||
+                          this.state.categories.includes("4")) && (
+                          <div style={{ marginBottom: 20 }} id="dropdown">
+                            <div className="tabupper no-select">
+                              <h5 className="dropdown-label">Hosting</h5>
+                            </div>
+                            <div className="row tab no-select">
+                              <div className="row">
+                                <div className="col">
+                                  <h5>Provider</h5>
+                                  <input
+                                    type="text"
+                                    name="hosting.provider"
+                                    defaultValue={this.state.hosting?.provider}
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                                <div className="col">
+                                  <h5>Username</h5>
+                                  <input
+                                    type="text"
+                                    name="hosting.username"
+                                    defaultValue={this.state.hosting?.username}
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                                <div className="col">
+                                  <h5>Password</h5>
+                                  <input
+                                    type="text"
+                                    name="hosting.password"
+                                    defaultValue={this.state.hosting?.password}
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {(this.state.categories.includes("3") ||
+                          this.state.categories.includes("4") ||
+                          this.state.categories.includes("5")) && (
+                          <div style={{ marginBottom: 20 }} id="dropdown">
+                            <div className="tabupper no-select">
+                              <h5 className="dropdown-label">FTP</h5>
+                            </div>
+                            <div className="row tab no-select">
+                              <div className="row">
+                                <div className="col">
+                                  <h5>Provider</h5>
+                                  <input
+                                    type="text"
+                                    name="FTP.provider"
+                                    defaultValue={this.state.FTP?.provider}
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                                <div className="col">
+                                  <h5>Username</h5>
+                                  <input
+                                    type="text"
+                                    name="FTP.username"
+                                    defaultValue={this.state.FTP?.username}
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                              </div>
+                              <div className="row">
+                                <div className="col">
+                                  <h5>Password</h5>
+                                  <input
+                                    type="text"
+                                    name="FTP.password"
+                                    defaultValue={this.state.FTP?.password}
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                                <div className="col">
+                                  <h5>Live Directory Path</h5>
+                                  <input
+                                    type="text"
+                                    name="FTP.liveDirectory"
+                                    defaultValue={this.state.FTP?.liveDirectory}
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {this.state.categories.length > 0 && (
+                          <div style={{ marginBottom: 20 }} id="dropdown">
+                            <div className="tabupper no-select">
+                              <h5
+                                onClick={() =>
+                                  this.toggleDropdown("showControlDropdown")
+                                }
+                                className="dropdown-label">
+                                Admin Control Panel
+                              </h5>
+                            </div>
+                            <div className="row tab no-select">
+                              <div className="row">
+                                <div className="col">
+                                  <h5>URL</h5>
+                                  <input
+                                    type="text"
+                                    name="controlPanel.url"
+                                    defaultValue={this.state.controlPanel?.url}
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                                <div className="col">
+                                  <h5>Username</h5>
+                                  <input
+                                    type="text"
+                                    name="controlPanel.username"
+                                    defaultValue={
+                                      this.state.controlPanel?.username
+                                    }
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                                <div className="col">
+                                  <h5>Password</h5>
+                                  <input
+                                    type="text"
+                                    name="controlPanel.password"
+                                    defaultValue={
+                                      this.state.controlPanel?.password
+                                    }
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {(this.state.categories.includes("1") ||
+                          this.state.categories.includes("4")) && (
+                          <div style={{ marginBottom: 20 }} id="dropdown">
+                            <div className="tabupper no-select">
+                              <h5 className="dropdown-label">Domain</h5>
+                            </div>
+                            <div className="row tab no-select">
+                              <div className="row">
+                                <div className="col">
+                                  <h5>Provider</h5>
+                                  <input
+                                    type="text"
+                                    name="domain.provider"
+                                    defaultValue={this.state.domain?.provider}
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                                <div className="col">
+                                  <h5>Username</h5>
+                                  <input
+                                    type="text"
+                                    name="domain.username"
+                                    defaultValue={this.state.domain?.username}
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                                <div className="col">
+                                  <h5>Password</h5>
+                                  <input
+                                    type="text"
+                                    name="domain.password"
+                                    defaultValue={this.state.domain?.password}
+                                    className={`form-control ${
+                                      this.state.nameError && "error"
+                                    }`}
+                                    placeholder=""
+                                    onChange={this.handleChange}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {this.state.categories.includes("2") && (
+                          <>
+                            <h5>SEO Keywords</h5>
+                            <input
+                              type="text"
+                              name="seoKeywords"
+                              defaultValue={this.state.seoKeywords}
+                              className={`form-control ${
+                                this.state.nameError && "error"
+                              }`}
+                              placeholder=""
+                              onChange={this.handleChange}
+                            />
+                          </>
+                        )}
                         <h5>Company Description</h5>
                         <textarea
                           name="description"

@@ -19,47 +19,6 @@ const ticketSchema = new Schema({
     enum: ["new", "completed", "closed", "pending review", "pending response"],
     default: "new",
   },
-  branding: {
-    files: [String], //array of media urls
-    colorCodes: {
-      type: String,
-    },
-    fonts: String,
-    designDocument: [String], //array of media urls
-  },
-  hosting: {
-    type: {
-      provider: { type: String, required: true },
-      username: { type: String, required: true },
-      password: { type: String, required: true },
-    },
-    required: false,
-  },
-  FTP: {
-    type: {
-      provider: { type: String, required: true },
-      username: { type: String, required: true },
-      password: { type: String, required: true },
-      liveDirectory: { type: String, required: true },
-    },
-    required: false,
-  },
-  controlPanel: {
-    type: {
-      url: { type: String, required: true },
-      username: { type: String, required: true },
-      password: { type: String, required: true },
-    },
-    required: false,
-  },
-  domain: {
-    type: {
-      provider: { type: String, required: true },
-      username: { type: String, required: true },
-      password: { type: String, required: true },
-    },
-    required: false,
-  },
   chat: {
     type: [
       {
@@ -73,7 +32,6 @@ const ticketSchema = new Schema({
   deadline: { type: Date, required: true },
   created: { type: Date, default: Date.now, required: true },
   updated: { type: Date, default: Date.now, required: true },
-  SEOKeywords: String,
   comments: String, //anything additional
 });
 

@@ -18,11 +18,10 @@ class Ticket extends Component {
       errors: {},
       deadline: new Date(),
       category: 1,
-      brandingFiles: [],
-      brandingDesignDocuments: [],
       priority: "medium",
       org: "select",
       orgs: [],
+      categories: [],
     };
   }
   validateForm = () => {
@@ -45,6 +44,9 @@ class Ticket extends Component {
   handleChangeOrg = (event) => {
     const { name, value } = event.target;
     this.setState({ [name]: value });
+    const categories =
+      this.state.orgs.find((item) => item._id === value).categories || [];
+    this.setState({ categories });
   };
   handleChange = (event) => {
     const { name, value } = event.target;
@@ -105,40 +107,7 @@ class Ticket extends Component {
         console.log(err.response || err);
       });
   }
-  deleteDesignDocuments = () => {
-    this.setState({ brandingDesignDocuments: [] });
-    document.getElementById("delete_dd").classList.add("hide");
-    document.getElementById("delete_dd").classList.remove("show");
-  };
-  onChangeDesignDocuments = async (e) => {
-    const brandingDesignDocuments = Array.from(e.target.files);
-    await this.setState({ brandingDesignDocuments });
-    const deleteBtn = document.getElementById("delete_dd");
-    if (this.state.brandingDesignDocuments.length > 0) {
-      deleteBtn.classList.add("show");
-      deleteBtn.classList.remove("hide");
-    } else {
-      deleteBtn.classList.remove("show");
-      deleteBtn.classList.add("hide");
-    }
-  };
-  deleteBrandingFiles = () => {
-    this.setState({ brandingFiles: [] });
-    document.getElementById("delete_bf").classList.add("hide");
-    document.getElementById("delete_bf").classList.remove("show");
-  };
-  onChangeBrandingFiles = async (e) => {
-    const brandingFiles = Array.from(e.target.files);
-    await this.setState({ brandingFiles });
-    const deleteBtn = document.getElementById("delete_bf");
-    if (this.state.brandingFiles.length > 0) {
-      deleteBtn.classList.add("show");
-      deleteBtn.classList.remove("hide");
-    } else {
-      deleteBtn.classList.remove("show");
-      deleteBtn.classList.add("hide");
-    }
-  };
+
   submit = () => {
     if (this.state.actionLock) {
       return;
@@ -158,82 +127,28 @@ class Ticket extends Component {
     this.setState({
       actionLock: true,
     });
-    let formData = new FormData();
-    for (let i = 0; i < this.state.brandingFiles.length; i += 1) {
-      formData.append("files", this.state.brandingFiles[i]);
-    }
-    for (let i = 0; i < this.state.brandingDesignDocuments.length; i += 1) {
-      formData.append("files", this.state.brandingDesignDocuments[i]);
-    }
 
     axios
-      .post(`${HOST}/file/upload`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
+      .post(
+        `${HOST}/ticket/${this.state._id ? `update/${this.state._id}` : "add"}`,
+        {
+          username: getAuthUser(),
+          category: this.state.category,
+          domainURL: this.state.domainURL,
+          title: this.state.title,
+          priority: this.state.priority,
+          deadline: this.state.deadline,
+          organization: this.state.org,
+          comments: this.state.comments,
         },
-      })
+        { headers: { Authorization: `Bearer ${getAuthToken()}` } }
+      )
       .then((res) => {
-        axios
-          .post(
-            `${HOST}/ticket/${
-              this.state._id ? `update/${this.state._id}` : "add"
-            }`,
-            {
-              username: getAuthUser(),
-              category: this.state.category,
-              domainURL: this.state.domainURL,
-              title: this.state.title,
-              priority: this.state.priority,
-              deadline: this.state.deadline,
-              organization: this.state.org,
-              branding: {
-                files:
-                  this.state._id && this.state.branding?.files
-                    ? this.state.branding.files.concat(
-                        res.data.slice(0, this.state.brandingFiles.length)
-                      )
-                    : this.state.brandingFiles.length != 0
-                    ? res.data.slice(0, this.state.brandingFiles.length)
-                    : undefined,
-                colorCodes: this.state.branding?.colorCodes,
-                fonts: this.state.branding?.fonts,
-                designDocument:
-                  this.state._id && this.state.branding?.files
-                    ? this.state.branding.designDocument.concat(
-                        res.data.slice(
-                          this.state.brandingFiles.length,
-                          this.state.brandingFiles.length +
-                            this.state.brandingDesignDocuments.length
-                        )
-                      )
-                    : this.state.brandingDesignDocuments.length != 0
-                    ? res.data.slice(
-                        this.state.brandingFiles.length,
-                        this.state.brandingFiles.length +
-                          this.state.brandingDesignDocuments.length
-                      )
-                    : undefined,
-              },
-              hosting: this.state.hosting,
-              FTP: this.state.FTP,
-              controlPanel: this.state.controlPanel,
-              domain: this.state.domain,
-              SEOKeywords: this.state.seoKeywords,
-              comments: this.state.comments,
-            },
-            { headers: { Authorization: `Bearer ${getAuthToken()}` } }
-          )
-          .then((res) => {
-            this.setState({ actionLock: false });
-            if (res.status == 200) {
-              alert(this.state._id ? "Ticket Edited!" : "Ticket Created!");
-              window.location.href = `/review`;
-            }
-          });
-      })
-      .catch((err) => {
-        alert(err);
         this.setState({ actionLock: false });
+        if (res.status == 200) {
+          alert(this.state._id ? "Ticket Edited!" : "Ticket Created!");
+          window.location.href = `/review`;
+        }
       });
   };
   render() {
@@ -300,25 +215,35 @@ class Ticket extends Component {
                         name="category"
                         onChange={this.handleChange}
                         className="form-control">
-                        <option
-                          value={1}
-                          selected={
-                            ![2, 3, 4, 5].includes(this.state.category)
-                          }>
-                          PBC
-                        </option>
-                        <option value={2} selected={this.state.category == 2}>
-                          SEO
-                        </option>
-                        <option value={3} selected={this.state.category == 3}>
-                          Web Maintenance and Governance
-                        </option>
-                        <option value={4} selected={this.state.category == 4}>
-                          New Website Build
-                        </option>
-                        <option value={5} selected={this.state.category == 5}>
-                          New App Build
-                        </option>
+                        {this.state.categories.includes("1") && (
+                          <option
+                            value={1}
+                            selected={
+                              ![2, 3, 4, 5].includes(this.state.category)
+                            }>
+                            PBC
+                          </option>
+                        )}
+                        {this.state.categories.includes("2") && (
+                          <option value={2} selected={this.state.category == 2}>
+                            SEO
+                          </option>
+                        )}
+                        {this.state.categories.includes("3") && (
+                          <option value={3} selected={this.state.category == 3}>
+                            Web Maintenance and Governance
+                          </option>
+                        )}
+                        {this.state.categories.includes("4") && (
+                          <option value={4} selected={this.state.category == 4}>
+                            New Website Build
+                          </option>
+                        )}
+                        {this.state.categories.includes("5") && (
+                          <option value={5} selected={this.state.category == 5}>
+                            New App Build
+                          </option>
+                        )}
                       </select>
                     </div>
                   </div>
@@ -360,345 +285,6 @@ class Ticket extends Component {
                   </div>
 
                   <div className="field-set">
-                    {[4, 5].includes(parseInt(this.state.category)) && (
-                      <div style={{ marginBottom: 20 }} id="dropdown">
-                        <div className="tabupper no-select">
-                          <h5 className="dropdown-label">Branding</h5>
-                        </div>
-                        <div className="tab no-select">
-                          <div className="row">
-                            <div className="col">
-                              <h5>Color Codes</h5>
-                              <input
-                                type="text"
-                                name="branding.colorCodes"
-                                defaultValue={this.state.branding?.colorCodes}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                            <div className="col">
-                              <h5>Fonts</h5>
-                              <input
-                                type="text"
-                                name="branding.fonts"
-                                defaultValue={this.state.branding?.fonts}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                          </div>
-                          <div className="row">
-                            <div className="col">
-                              <h5>Logos</h5>
-                              <div className="d-create-file">
-                                <p id="file_name">
-                                  Upload Your Branding Files Here
-                                </p>
-                                {this.state.brandingFiles.map((x) => (
-                                  <p key={x.name}>{x.name}</p>
-                                ))}
-                                <div className="browse">
-                                  <input
-                                    type="button"
-                                    className="btn-main"
-                                    id="get_file"
-                                    value="Browse"
-                                  />
-                                  <input
-                                    id="upload_file"
-                                    type="file"
-                                    multiple
-                                    onChange={this.onChangeBrandingFiles}
-                                  />
-                                </div>
-                              </div>
-                              <div
-                                id="delete_bf"
-                                className="btn-main hide mt-2"
-                                style={{ backgroundColor: "#900000" }}
-                                onClick={this.deleteBrandingFiles}>
-                                Delete Files
-                              </div>
-                            </div>
-                            <div className="col">
-                              <h5>Branding Documents</h5>
-                              <div className="d-create-file">
-                                <p id="file_name">Upload Your Designs Here</p>
-                                {this.state.brandingDesignDocuments.map((x) => (
-                                  <p key={x.name}>{x.name}</p>
-                                ))}
-                                <div className="browse">
-                                  <input
-                                    type="button"
-                                    className="btn-main"
-                                    id="get_file"
-                                    value="Browse"
-                                  />
-                                  <input
-                                    id="upload_file"
-                                    type="file"
-                                    multiple
-                                    onChange={this.onChangeDesignDocuments}
-                                  />
-                                </div>
-                              </div>
-                              <div
-                                id="delete_dd"
-                                className="btn-main hide mt-2"
-                                style={{ backgroundColor: "#900000" }}
-                                onClick={this.deleteDesignDocuments}>
-                                Delete Files
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {[3, 4].includes(parseInt(this.state.category)) && (
-                      <div style={{ marginBottom: 20 }} id="dropdown">
-                        <div className="tabupper no-select">
-                          <h5 className="dropdown-label">Hosting</h5>
-                        </div>
-                        <div className="row tab no-select">
-                          <div className="row">
-                            <div className="col">
-                              <h5>Provider</h5>
-                              <input
-                                type="text"
-                                name="hosting.provider"
-                                defaultValue={this.state.hosting?.provider}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                            <div className="col">
-                              <h5>Username</h5>
-                              <input
-                                type="text"
-                                name="hosting.username"
-                                defaultValue={this.state.hosting?.username}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                            <div className="col">
-                              <h5>Password</h5>
-                              <input
-                                type="text"
-                                name="hosting.password"
-                                defaultValue={this.state.hosting?.password}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {[3, 4, 5].includes(parseInt(this.state.category)) && (
-                      <div style={{ marginBottom: 20 }} id="dropdown">
-                        <div className="tabupper no-select">
-                          <h5 className="dropdown-label">FTP</h5>
-                        </div>
-                        <div className="row tab no-select">
-                          <div className="row">
-                            <div className="col">
-                              <h5>Provider</h5>
-                              <input
-                                type="text"
-                                name="FTP.provider"
-                                defaultValue={this.state.FTP?.provider}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                            <div className="col">
-                              <h5>Username</h5>
-                              <input
-                                type="text"
-                                name="FTP.username"
-                                defaultValue={this.state.FTP?.username}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                          </div>
-                          <div className="row">
-                            <div className="col">
-                              <h5>Password</h5>
-                              <input
-                                type="text"
-                                name="FTP.password"
-                                defaultValue={this.state.FTP?.password}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                            <div className="col">
-                              <h5>Live Directory Path</h5>
-                              <input
-                                type="text"
-                                name="FTP.liveDirectory"
-                                defaultValue={this.state.FTP?.liveDirectory}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {[1, 2, 3, 4, 5].includes(
-                      parseInt(this.state.category)
-                    ) && (
-                      <div style={{ marginBottom: 20 }} id="dropdown">
-                        <div className="tabupper no-select">
-                          <h5
-                            onClick={() =>
-                              this.toggleDropdown("showControlDropdown")
-                            }
-                            className="dropdown-label">
-                            Admin Control Panel
-                          </h5>
-                        </div>
-                        <div className="row tab no-select">
-                          <div className="row">
-                            <div className="col">
-                              <h5>URL</h5>
-                              <input
-                                type="text"
-                                name="controlPanel.url"
-                                defaultValue={this.state.controlPanel?.url}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                            <div className="col">
-                              <h5>Username</h5>
-                              <input
-                                type="text"
-                                name="controlPanel.username"
-                                defaultValue={this.state.controlPanel?.username}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                            <div className="col">
-                              <h5>Password</h5>
-                              <input
-                                type="text"
-                                name="controlPanel.password"
-                                defaultValue={this.state.controlPanel?.password}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {[1, 4].includes(parseInt(this.state.category)) && (
-                      <div style={{ marginBottom: 20 }} id="dropdown">
-                        <div className="tabupper no-select">
-                          <h5 className="dropdown-label">Domain</h5>
-                        </div>
-                        <div className="row tab no-select">
-                          <div className="row">
-                            <div className="col">
-                              <h5>Provider</h5>
-                              <input
-                                type="text"
-                                name="domain.provider"
-                                defaultValue={this.state.domain?.provider}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                            <div className="col">
-                              <h5>Username</h5>
-                              <input
-                                type="text"
-                                name="domain.username"
-                                defaultValue={this.state.domain?.username}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                            <div className="col">
-                              <h5>Password</h5>
-                              <input
-                                type="text"
-                                name="domain.password"
-                                defaultValue={this.state.domain?.password}
-                                className={`form-control ${
-                                  this.state.nameError && "error"
-                                }`}
-                                placeholder=""
-                                onChange={this.handleChange}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {[2].includes(parseInt(this.state.category)) && (
-                      <>
-                        <h5>SEO Keywords</h5>
-                        <input
-                          type="text"
-                          name="seoKeywords"
-                          defaultValue={this.state.seoKeywords}
-                          className={`form-control ${
-                            this.state.nameError && "error"
-                          }`}
-                          placeholder=""
-                          onChange={this.handleChange}
-                        />
-                      </>
-                    )}
                     <h5 htmlFor="deadline">Deadline</h5>
                     <DatePicker
                       selected={this.state.deadline}

@@ -16,6 +16,14 @@ router.route("/add").post(async (req, res) => {
     socials: req.body.socials,
     legalDocuments: req.body.legalDocuments,
     description: req.body.description,
+    categories: req.body.categories,
+    branding: req.body.branding,
+    hosting: req.body.hosting,
+    FTP: req.body.FTP,
+    deadline: req.body.deadline,
+    controlPanel: req.body.controlPanel,
+    domain: req.body.domain,
+    SEOKeywords: req.body.SEOKeywords,
   });
 
   newOrganization
