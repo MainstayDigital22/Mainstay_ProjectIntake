@@ -869,7 +869,11 @@ a {
   box-shadow: 2px 2px 20px 0px rgba(131, 100, 226, 0.5);
   transition: all 0.3s ease;
 }
-
+.form-check label {
+  margin-top: 10px;
+  margin-left: 10px;
+  font-size: 15px;
+}
 .form-control {
   padding: 8px;
   margin-bottom: 20px;
@@ -888,6 +892,12 @@ a {
 
 .hide {
   display: none !important;
+}
+
+.form-error {
+  color: red;
+  margin-top: -12px !important;
+  padding-bottom: 12px;
 }
 
 .show {

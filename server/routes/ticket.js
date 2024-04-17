@@ -14,7 +14,7 @@ router.route("/").post(async (req, res) => {
       query = { status: req.body.status };
     }
   } else {
-    query.username = req.body.username;
+    query.organization = req.body.orgs;
     if (req.body.status) {
       query.status = req.body.status;
     }
@@ -56,15 +56,7 @@ router.route("/:_id").delete(async (req, res) => {
       res.json("ticket Not Found.");
       return;
     }
-    let media = ticket[0].branding.files || [];
-    console.log(media);
-    for (let i = 0; i < media.length; i += 1) {
-      deleteFile(media[i].split("/")[media[i].split("/").length - 1]);
-    }
-    media = ticket[0].branding.designDocument || [];
-    for (let i = 0; i < media.length; i += 1) {
-      deleteFile(media[i].split("/")[media[i].split("/").length - 1]);
-    }
+
     Ticket.findOneAndDelete({ _id: req.params._id })
       .then(() => res.json("Ticket deleted."))
       .catch((err) => res.status(400).json("Error: " + err));

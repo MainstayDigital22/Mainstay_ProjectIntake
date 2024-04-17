@@ -3,6 +3,19 @@ const Organization = require("../schemas/organization");
 let User = require("../schemas/user");
 const { auth } = require("./auth");
 const mongoose = require("mongoose");
+
+/* add delete
+ let media = ticket[0].branding.files || [];
+    console.log(media);
+    for (let i = 0; i < media.length; i += 1) {
+      deleteFile(media[i].split("/")[media[i].split("/").length - 1]);
+    }
+    media = ticket[0].branding.designDocument || [];
+    for (let i = 0; i < media.length; i += 1) {
+      deleteFile(media[i].split("/")[media[i].split("/").length - 1]);
+    }
+*/
+
 router.route("/add").post(async (req, res) => {
   /*if ((await auth(req, ["admin", "staff"])) !== 1) {
     res.status(403).json("Auth Error");
@@ -46,7 +59,12 @@ router.route("/").get(async function (req, res) {
 
 router.route("/userorgs/:userid").get(async function (req, res) {
   const userId = req.params.userid;
-
+  if ((await auth(req, ["admin"])) == 1) {
+    Organization.find({})
+      .then((orgs) => res.json(orgs))
+      .catch((err) => res.status(400).json("Error: " + err));
+    return;
+  }
   Organization.find({ users: mongoose.Types.ObjectId(userId) })
     .then((orgs) => res.json(orgs))
     .catch((err) => res.status(400).json("Error: " + err));

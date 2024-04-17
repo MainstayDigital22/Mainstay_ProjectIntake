@@ -59,13 +59,14 @@ class HeaderWrapper extends Component {
           ) {
             axios
               .post(
-                `${HOST}:8080/user/refresh`,
+                `${HOST}/user/refresh`,
                 { username: getAuthUser() },
                 { headers: { Authorization: `Bearer ${getAuthToken()}` } }
               )
               .then((res) => {
                 const user = JSON.stringify(res.data);
                 localStorage.setItem("user", user);
+                console.log(user);
               })
               .catch((error) => {
                 console.error("Session refresh failed:", error);

@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "react-select": "^5.8.0"
   },
   "scripts": {
     "start": "concurrently \"cd server && nodemon server\"  \"cd client && npm start\""

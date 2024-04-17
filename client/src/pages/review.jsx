@@ -10,7 +10,12 @@ import {
   openTicket,
   profilePlaceholder,
 } from "../assets";
-import { getAuthToken, getAuthUser, getAuthLevel } from "../components/auth";
+import {
+  getAuthToken,
+  getAuthUser,
+  getAuthLevel,
+  getAuthId,
+} from "../components/auth";
 import { HOST } from "../const";
 import { Label } from "../components/label";
 import { ChatInfo } from "../components/chatinfo";
@@ -23,7 +28,8 @@ class Review extends Component {
       tagInput: [],
       posts: [],
       open: -1,
-      showAction: true,
+      showAction: getAuthLevel() != "client",
+      showOpen: getAuthLevel() == "client",
       showClosed: false,
       showOverdue: false,
       showProgress: false,
@@ -60,13 +66,22 @@ class Review extends Component {
     if (this.state.showAction) filters.push("new", "pending review");
     if (this.state.showProgress) filters.push("pending response");
     if (this.state.showClosed) filters.push("completed", "closed");
+    if (this.state.showOpen)
+      filters.push("new", "pending review", "pending response");
     const len = this.state.posts.length;
-
+    const orgsRes = await axios.get(
+      `${HOST}/organization/userorgs/${getAuthId()}`,
+      {
+        headers: { Authorization: `Bearer ${getAuthToken()}` },
+      }
+    );
+    const orgs = orgsRes.data.map((item) => item._id);
+    console.log(orgs);
     await axios
       .post(
         `${HOST}/ticket`,
         {
-          username: getAuthUser(),
+          orgs: orgs,
           //status: filters,
         },
         { headers: { Authorization: `Bearer ${getAuthToken()}` } }
@@ -94,6 +109,7 @@ class Review extends Component {
           inProgressCount,
           overdueCount,
           closedCount,
+          openCount: actionNeededCount + inProgressCount + overdueCount,
         });
       })
       .catch((err) => {
@@ -238,46 +254,69 @@ class Review extends Component {
         {this.state.posts ? (
           <>
             <div className="row status">
-              <button
-                className={`col ${
-                  this.state.showAction ? "status-active" : "status-inactive"
-                }`}
-                onClick={() => {
-                  this.setState(
-                    { open: -1, showAction: !this.state.showAction },
-                    () => this.updatePosts()
-                  );
-                }}>
-                <h1>{this.state.actionNeededCount}</h1>
-                <h3>Action Needed</h3>
-              </button>
-
-              <button
-                className={`col ${
-                  this.state.showProgress ? "status-active" : "status-inactive"
-                }`}
-                onClick={() => {
-                  this.setState(
-                    { open: -1, showProgress: !this.state.showProgress },
-                    () => this.updatePosts()
-                  );
-                }}>
-                <h1>{this.state.inProgressCount}</h1>
-                <h3>Awaiting Response</h3>
-              </button>
-              <button
-                className={`col ${
-                  this.state.showOverdue ? "status-active" : "status-inactive"
-                }`}
-                onClick={() => {
-                  this.setState(
-                    { open: -1, showOverdue: !this.state.showOverdue },
-                    () => this.updatePosts()
-                  );
-                }}>
-                <h1>{this.state.overdueCount}</h1>
-                <h3>Overdue</h3>
-              </button>
+              {getAuthLevel() != "client" ? (
+                <>
+                  <button
+                    className={`col ${
+                      this.state.showAction
+                        ? "status-active"
+                        : "status-inactive"
+                    }`}
+                    onClick={() => {
+                      this.setState(
+                        { open: -1, showAction: !this.state.showAction },
+                        () => this.updatePosts()
+                      );
+                    }}>
+                    <h1>{this.state.actionNeededCount}</h1>
+                    <h3>Action Needed</h3>
+                  </button>
+                  <button
+                    className={`col ${
+                      this.state.showProgress
+                        ? "status-active"
+                        : "status-inactive"
+                    }`}
+                    onClick={() => {
+                      this.setState(
+                        { open: -1, showProgress: !this.state.showProgress },
+                        () => this.updatePosts()
+                      );
+                    }}>
+                    <h1>{this.state.inProgressCount}</h1>
+                    <h3>Awaiting Response</h3>
+                  </button>
+                  <button
+                    className={`col ${
+                      this.state.showOverdue
+                        ? "status-active"
+                        : "status-inactive"
+                    }`}
+                    onClick={() => {
+                      this.setState(
+                        { open: -1, showOverdue: !this.state.showOverdue },
+                        () => this.updatePosts()
+                      );
+                    }}>
+                    <h1>{this.state.overdueCount}</h1>
+                    <h3>Overdue</h3>
+                  </button>
+                </>
+              ) : (
+                <button
+                  className={`col ${
+                    this.state.showOpen ? "status-active" : "status-inactive"
+                  }`}
+                  onClick={() => {
+                    this.setState(
+                      { open: -1, showOpen: !this.state.showOpen },
+                      () => this.updatePosts()
+                    );
+                  }}>
+                  <h1>{this.state.openCount}</h1>
+                  <h3>Open</h3>
+                </button>
+              )}
               <button
                 className={`col ${
                   this.state.showClosed ? "status-active" : "status-inactive"
@@ -345,56 +384,58 @@ class Review extends Component {
                               {ticket.domainURL}
                             </p>
                           </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              marginLeft: "auto",
-                            }}>
-                            {ticket.status == "closed" ? (
+                          {getAuthLevel() == "admin" && (
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                marginLeft: "auto",
+                              }}>
+                              {ticket.status == "closed" ? (
+                                <div
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    this.open(ticket._id, ticket.chat);
+                                  }}>
+                                  <img
+                                    style={{ cursor: "pointer" }}
+                                    src={openTicket}
+                                  />
+                                </div>
+                              ) : (
+                                <div
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    this.close(ticket._id);
+                                  }}>
+                                  <img
+                                    style={{ cursor: "pointer" }}
+                                    src={closeTicket}
+                                  />
+                                </div>
+                              )}
                               <div
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  this.open(ticket._id, ticket.chat);
+                                  this.edit(ticket._id);
                                 }}>
                                 <img
                                   style={{ cursor: "pointer" }}
-                                  src={openTicket}
+                                  src={editTicket}
                                 />
                               </div>
-                            ) : (
                               <div
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  this.close(ticket._id);
+                                  this.delete(ticket._id);
                                 }}>
                                 <img
                                   style={{ cursor: "pointer" }}
-                                  src={closeTicket}
+                                  src={deleteTicket}
                                 />
                               </div>
-                            )}
-                            <div
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                this.edit(ticket._id);
-                              }}>
-                              <img
-                                style={{ cursor: "pointer" }}
-                                src={editTicket}
-                              />
                             </div>
-                            <div
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                this.delete(ticket._id);
-                              }}>
-                              <img
-                                style={{ cursor: "pointer" }}
-                                src={deleteTicket}
-                              />
-                            </div>
-                          </div>
+                          )}
                         </div>
                       </div>
                     );

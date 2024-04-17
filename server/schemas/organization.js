@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const organizationSchema = new Schema({
   contactName: { type: String, required: true },
   companyName: { type: String, required: true },
-  companyWebsite: { type: String, required: true },
+  companyWebsite: [{ type: String, required: true }],
   contactEmail: { type: String, required: true },
   socials: [String],
   legalDocuments: [String], //urls

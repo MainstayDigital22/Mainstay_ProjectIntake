@@ -22,11 +22,12 @@ class Ticket extends Component {
       org: "select",
       orgs: [],
       categories: [],
+      companyUrls: [],
     };
   }
   validateForm = () => {
     const errors = {};
-    const requiredFields = ["title", "domainURL"]; // List of required field names
+    const requiredFields = ["title"]; // List of required field names
     requiredFields.forEach((fieldName) => {
       if (!this.state[fieldName] || this.state[fieldName].trim() === "") {
         errors[fieldName] = `${fieldName} cannot be empty`; // Customize the error message as needed
@@ -34,6 +35,7 @@ class Ticket extends Component {
     });
 
     this.setState({ errors });
+    console.log(errors);
     return Object.keys(errors).length === 0; // Form is valid if there are no errors
   };
   handleDateChange = (date) => {
@@ -46,7 +48,10 @@ class Ticket extends Component {
     this.setState({ [name]: value });
     const categories =
       this.state.orgs.find((item) => item._id === value).categories || [];
-    this.setState({ categories });
+    const companyUrls =
+      this.state.orgs.find((item) => item._id === value).companyWebsite || [];
+    const domainURL = companyUrls[0] || undefined;
+    this.setState({ categories, companyUrls, domainURL });
   };
   handleChange = (event) => {
     const { name, value } = event.target;
@@ -85,7 +90,7 @@ class Ticket extends Component {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
-        this.setState({ orgs: res.data });
+        this.setState({ orgs: res.data, domainURL: undefined });
       });
   }
 
@@ -197,17 +202,20 @@ class Ticket extends Component {
                     placeholder=""
                     onChange={this.handleChange}
                   />
-                  <h5>Domain URL *</h5>
-                  <input
-                    type="text"
+                  {this.state.errors.title && (
+                    <p className="form-error">{"Title is required"}</p>
+                  )}
+                  <h5>Domain URL</h5>
+                  <select
                     name="domainURL"
-                    defaultValue={this.state.domainURL}
-                    className={`form-control ${
-                      this.state.errors.domainURL && "error"
-                    }`}
-                    placeholder=""
                     onChange={this.handleChange}
-                  />
+                    className="form-control">
+                    {this.state.companyUrls?.map((domain) => (
+                      <option value={domain} selected={this.state.domainURL}>
+                        {domain}
+                      </option>
+                    ))}
+                  </select>
                   <div className="row">
                     <div className="col">
                       <h5>Category</h5>
@@ -216,11 +224,7 @@ class Ticket extends Component {
                         onChange={this.handleChange}
                         className="form-control">
                         {this.state.categories.includes("1") && (
-                          <option
-                            value={1}
-                            selected={
-                              ![2, 3, 4, 5].includes(this.state.category)
-                            }>
+                          <option value={1} selected={this.state.category == 1}>
                             PBC
                           </option>
                         )}

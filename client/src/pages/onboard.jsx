@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { Component } from "react";
 import { createGlobalStyle } from "styled-components";
+import CreatableSelect from "react-select/creatable";
 import { getAuthLevel, getAuthToken, getAuthUser } from "../components/auth";
 import { HOST } from "../const";
 
@@ -15,8 +16,12 @@ export default class OnBoard extends Component {
       brandingDesignDocuments: [],
       actionLock: false,
       username: getAuthUser(),
+      urls: [],
     };
   }
+  onChangeURLs = (newURLs) => {
+    this.setState({ urls: newURLs || [] });
+  };
   handleChange = (event) => {
     const { name, value } = event.target;
     const nameParts = name.split(".");
@@ -111,28 +116,31 @@ export default class OnBoard extends Component {
     const newOrgFields = [
       "companyName",
       "primaryContactName",
-      "websiteURL",
+      "urls",
       "contactEmail",
     ];
+
+    let urls = this.state.urls.map((site) => site.value);
+    const urlPattern =
+      /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
 
     const emailPattern =
       /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i;
     const phonePattern = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/;
     if (this.state.email && !emailPattern.test(this.state.email)) {
       formIsValid = false;
-      errors["email"] = "Invalid email format.";
+      errors["email"] = "Invalid email format";
     }
     if (
       this.state.contactEmail &&
       !emailPattern.test(this.state.contactEmail)
     ) {
       formIsValid = false;
-      errors["contactEmail"] = "Invalid email format.";
+      errors["contactEmail"] = "Invalid email format";
     }
     if (this.state.phone && !phonePattern.test(this.state.phone)) {
       formIsValid = false;
-      errors["phone"] =
-        "Invalid phone format. Include only numbers and basic symbols.";
+      errors["phone"] = "Invalid phone format";
     }
     const requiredFields =
       this.state.username === "__new_user" && this.state.org === "__new_org"
@@ -144,11 +152,21 @@ export default class OnBoard extends Component {
         : [];
 
     requiredFields.forEach((field) => {
-      if (!this.state[field]) {
+      if (
+        !this.state[field] ||
+        (this.state[field] instanceof Array && this.state[field].length == 0)
+      ) {
         formIsValid = false;
-        errors[field] = `${field} is required.`;
+        errors[field] = `required`;
       }
     });
+    if (urls && Array.isArray(urls)) {
+      const invalidUrls = urls.filter((url) => !urlPattern.test(url));
+      if (invalidUrls.length > 0) {
+        formIsValid = false;
+        errors["urls"] = "One or more URLs are invalid";
+      }
+    }
     console.log(errors);
     this.setState({ errors });
     return formIsValid;
@@ -250,7 +268,7 @@ export default class OnBoard extends Component {
         console.log(uploadResponse);
         const orgResponse = await axios.post(`${HOST}/organization/add`, {
           companyName: this.state.companyName,
-          companyWebsite: this.state.websiteURL,
+          companyWebsite: this.state.urls.map((site) => site.value),
           contactName: this.state.primaryContactName,
           contactEmail: this.state.contactEmail,
           socials: [],
@@ -292,11 +310,13 @@ export default class OnBoard extends Component {
         if (orgResponse.status === 200) {
           organizationId = orgResponse.data.id;
         } else {
+          console.log(orgResponse);
           alert("Cannot create new organization");
           this.setState({ actionLock: false });
         }
       } catch (err) {
         alert(err);
+        console.log(err);
         this.setState({ actionLock: false });
       }
     }
@@ -359,19 +379,22 @@ export default class OnBoard extends Component {
                       <>
                         <div className="row">
                           <div className="col-6">
-                            <h5>Company Name</h5>
+                            <h5>Company Name *</h5>
                             <input
                               type="text"
                               name="companyName"
-                              className={`form-control ${
-                                this.state.errors.companyName && "error"
-                              }`}
+                              className={`form-control`}
                               placeholder=""
                               onChange={this.handleChange}
                             />
+                            {this.state.errors.companyName && (
+                              <p className="form-error">
+                                {"Company Name is required"}
+                              </p>
+                            )}
                           </div>
                           <div className="col-6">
-                            <h5>Primary Contact Name</h5>
+                            <h5>Primary Contact Name *</h5>
                             <input
                               type="text"
                               name="primaryContactName"
@@ -381,23 +404,35 @@ export default class OnBoard extends Component {
                               placeholder=""
                               onChange={this.handleChange}
                             />
+                            {this.state.errors.primaryContactName && (
+                              <p className="form-error">
+                                {"Primary Contact Name is required"}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="row">
                           <div className="col-6">
-                            <h5>Website URL</h5>
-                            <input
-                              type="text"
-                              name="websiteURL"
-                              className={`form-control ${
-                                this.state.errors.websiteURL && "error"
-                              }`}
-                              placeholder=""
-                              onChange={this.handleChange}
+                            <h5>Website URLs *</h5>
+                            <CreatableSelect
+                              className={`form-control`}
+                              isMulti
+                              onChange={this.onChangeURLs}
+                              options={this.state.urls}
+                              value={this.state.urls}
+                              placeholder="Type or paste URL here and press enter..."
                             />
+                            {this.state.errors.urls && (
+                              <p className="form-error">
+                                {this.state.errors.urls == "required"
+                                  ? "URLs are required"
+                                  : this.state.errors.urls}
+                              </p>
+                            )}
                           </div>
+
                           <div className="col-6">
-                            <h5>Contact Email</h5>
+                            <h5>Contact Email *</h5>
                             <input
                               type="text"
                               name="contactEmail"
@@ -407,6 +442,13 @@ export default class OnBoard extends Component {
                               placeholder=""
                               onChange={this.handleChange}
                             />
+                            {this.state.errors.contactEmail && (
+                              <p className="form-error">
+                                {this.state.errors.contactEmail == "required"
+                                  ? "URLs are required"
+                                  : this.state.errors.contactEmail}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="row">
@@ -528,7 +570,9 @@ export default class OnBoard extends Component {
                             <div className="tabupper no-select">
                               <h5 className="dropdown-label">Branding</h5>
                             </div>
-                            <div className="tab no-select">
+                            <div
+                              className="row tab no-select "
+                              style={{ paddingBottom: 20 }}>
                               <div className="row">
                                 <div className="col">
                                   <h5>Color Codes</h5>
@@ -644,9 +688,7 @@ export default class OnBoard extends Component {
                                     type="text"
                                     name="hosting.provider"
                                     defaultValue={this.state.hosting?.provider}
-                                    className={`form-control ${
-                                      this.state.nameError && "error"
-                                    }`}
+                                    className={`form-control`}
                                     placeholder=""
                                     onChange={this.handleChange}
                                   />
@@ -670,9 +712,7 @@ export default class OnBoard extends Component {
                                     type="text"
                                     name="hosting.password"
                                     defaultValue={this.state.hosting?.password}
-                                    className={`form-control ${
-                                      this.state.nameError && "error"
-                                    }`}
+                                    className={`form-control`}
                                     placeholder=""
                                     onChange={this.handleChange}
                                   />
@@ -812,7 +852,9 @@ export default class OnBoard extends Component {
                           this.state.categories.includes("4")) && (
                           <div style={{ marginBottom: 20 }} id="dropdown">
                             <div className="tabupper no-select">
-                              <h5 className="dropdown-label">Domain</h5>
+                              <h5 className="dropdown-label">
+                                Domain Management
+                              </h5>
                             </div>
                             <div className="row tab no-select">
                               <div className="row">
@@ -915,7 +957,7 @@ export default class OnBoard extends Component {
                       <>
                         <div className="row">
                           <div className="col-4">
-                            <h5>Username</h5>
+                            <h5>Username *</h5>
                             <input
                               type="text"
                               name="newusername"
@@ -925,9 +967,14 @@ export default class OnBoard extends Component {
                               placeholder=""
                               onChange={this.handleChange}
                             />
+                            {this.state.errors.newusername && (
+                              <p className="form-error">
+                                {"Username is required"}
+                              </p>
+                            )}
                           </div>
                           <div className="col-4">
-                            <h5>First Name</h5>
+                            <h5>First Name *</h5>
                             <input
                               type="text"
                               name="firstName"
@@ -937,9 +984,14 @@ export default class OnBoard extends Component {
                               placeholder=""
                               onChange={this.handleChange}
                             />
+                            {this.state.errors.firstName && (
+                              <p className="form-error">
+                                {"First Name is required"}
+                              </p>
+                            )}
                           </div>
                           <div className="col-4">
-                            <h5>Last Name</h5>
+                            <h5>Last Name *</h5>
                             <input
                               type="text"
                               name="lastName"
@@ -949,11 +1001,16 @@ export default class OnBoard extends Component {
                               placeholder=""
                               onChange={this.handleChange}
                             />
+                            {this.state.errors.lastName && (
+                              <p className="form-error">
+                                {"Last Name is required"}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="row">
                           <div className="col-4">
-                            <h5>Email</h5>
+                            <h5>Email *</h5>
                             <input
                               type="text"
                               name="email"
@@ -963,9 +1020,16 @@ export default class OnBoard extends Component {
                               placeholder=""
                               onChange={this.handleChange}
                             />
+                            {this.state.errors.email && (
+                              <p className="form-error">
+                                {this.state.errors.email == "required"
+                                  ? "Email is required"
+                                  : this.state.errors.email}
+                              </p>
+                            )}
                           </div>
                           <div className="col-4">
-                            <h5>Password</h5>
+                            <h5>Password *</h5>
                             <input
                               type="text"
                               name="password"
@@ -975,9 +1039,14 @@ export default class OnBoard extends Component {
                               placeholder=""
                               onChange={this.handleChange}
                             />
+                            {this.state.errors.password && (
+                              <p className="form-error">
+                                "Password is required"
+                              </p>
+                            )}
                           </div>
                           <div className="col-4">
-                            <h5>Phone</h5>
+                            <h5>Phone *</h5>
                             <input
                               type="text"
                               name="phone"
@@ -987,6 +1056,13 @@ export default class OnBoard extends Component {
                               placeholder=""
                               onChange={this.handleChange}
                             />
+                            {this.state.errors.phone && (
+                              <p className="form-error">
+                                {this.state.errors.phone == "required"
+                                  ? "Phone is required"
+                                  : this.state.errors.phone}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </>
