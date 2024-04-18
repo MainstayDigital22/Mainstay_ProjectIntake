@@ -33,6 +33,7 @@ class Review extends Component {
       showClosed: false,
       showOverdue: false,
       showProgress: false,
+      isExpand: false,
       height: 0,
       toggleList: true,
     };
@@ -76,7 +77,6 @@ class Review extends Component {
       }
     );
     const orgs = orgsRes.data.map((item) => item._id);
-    console.log(orgs);
     await axios
       .post(
         `${HOST}/ticket`,
@@ -88,28 +88,60 @@ class Review extends Component {
       )
       .then((res) => {
         const posts = res.data;
-        const actionNeededCount = posts.filter(
+        const action = posts.filter(
           (post) => post.status === "new" || post.status === "pending review"
-        ).length;
-        const inProgressCount = posts.filter(
+        );
+        const actionNeededCount =
+          getAuthLevel() == "client"
+            ? action.length
+            : this.state.showOverdue
+            ? action.filter((post) => new Date(post.deadline) < Date.now())
+                .length
+            : action.filter((post) => new Date(post.deadline) > Date.now())
+                .length;
+        const inProgress = posts.filter(
           (post) => post.status === "pending response"
-        ).length;
-        const overdueCount = posts.filter(
-          (post) => post.status === "overdue"
-        ).length; // Adjust based on actual logic
-        const closedCount = posts.filter(
+        );
+        const inProgressCount =
+          getAuthLevel() == "client"
+            ? inProgress.length
+            : this.state.showOverdue
+            ? inProgress.filter((post) => new Date(post.deadline) < Date.now())
+                .length
+            : inProgress.filter((post) => new Date(post.deadline) > Date.now())
+                .length;
+        const closed = posts.filter(
           (post) => post.status === "completed" || post.status === "closed"
-        ).length;
+        );
+        const closedCount =
+          getAuthLevel() == "client"
+            ? closed.length
+            : this.state.showOverdue
+            ? closed.filter((post) => new Date(post.deadline) < Date.now())
+                .length
+            : closed.filter((post) => new Date(post.deadline) > Date.now())
+                .length;
         if (len != posts.length) {
           this.setState({ open: -1 });
         }
+        const filteredPosts = posts.filter((post) =>
+          filters.includes(post.status)
+        );
         this.setState({
-          posts: posts.filter((post) => filters.includes(post.status)),
+          posts:
+            getAuthLevel() == "client"
+              ? filteredPosts
+              : this.state.showOverdue
+              ? filteredPosts.filter(
+                  (post) => new Date(post.deadline) < Date.now()
+                )
+              : filteredPosts.filter(
+                  (post) => new Date(post.deadline) > Date.now()
+                ),
           actionNeededCount,
           inProgressCount,
-          overdueCount,
           closedCount,
-          openCount: actionNeededCount + inProgressCount + overdueCount,
+          openCount: actionNeededCount + inProgressCount,
         });
       })
       .catch((err) => {
@@ -264,7 +296,11 @@ class Review extends Component {
                     }`}
                     onClick={() => {
                       this.setState(
-                        { open: -1, showAction: !this.state.showAction },
+                        {
+                          open: -1,
+                          showAction: !this.state.showAction,
+                          isExpand: false,
+                        },
                         () => this.updatePosts()
                       );
                     }}>
@@ -279,27 +315,16 @@ class Review extends Component {
                     }`}
                     onClick={() => {
                       this.setState(
-                        { open: -1, showProgress: !this.state.showProgress },
+                        {
+                          open: -1,
+                          showProgress: !this.state.showProgress,
+                          isExpand: false,
+                        },
                         () => this.updatePosts()
                       );
                     }}>
                     <h1>{this.state.inProgressCount}</h1>
                     <h3>Awaiting Response</h3>
-                  </button>
-                  <button
-                    className={`col ${
-                      this.state.showOverdue
-                        ? "status-active"
-                        : "status-inactive"
-                    }`}
-                    onClick={() => {
-                      this.setState(
-                        { open: -1, showOverdue: !this.state.showOverdue },
-                        () => this.updatePosts()
-                      );
-                    }}>
-                    <h1>{this.state.overdueCount}</h1>
-                    <h3>Overdue</h3>
                   </button>
                 </>
               ) : (
@@ -309,7 +334,11 @@ class Review extends Component {
                   }`}
                   onClick={() => {
                     this.setState(
-                      { open: -1, showOpen: !this.state.showOpen },
+                      {
+                        open: -1,
+                        showOpen: !this.state.showOpen,
+                        isExpand: false,
+                      },
                       () => this.updatePosts()
                     );
                   }}>
@@ -323,129 +352,166 @@ class Review extends Component {
                 }`}
                 onClick={() => {
                   this.setState(
-                    { open: -1, showClosed: !this.state.showClosed },
+                    {
+                      open: -1,
+                      showClosed: !this.state.showClosed,
+                      isExpand: false,
+                    },
                     () => this.updatePosts()
                   );
                 }}>
                 <h1>{this.state.closedCount}</h1>
                 <h3>Closed</h3>
               </button>
+              {getAuthLevel() != "client" && (
+                <button
+                  className={`col ${
+                    this.state.showOverdue ? "status-active" : "status-inactive"
+                  }`}
+                  onClick={() => {
+                    this.setState(
+                      {
+                        open: -1,
+                        showOverdue: !this.state.showOverdue,
+                        isExpand: false,
+                      },
+                      () => this.updatePosts()
+                    );
+                  }}>
+                  <h3>
+                    {this.state.showOverdue
+                      ? "Displaying Overdue"
+                      : "Displaying On Time"}
+                  </h3>
+                </button>
+              )}
             </div>
             <div
               style={{ display: "inline-flex", width: "100%", height: "100%" }}>
-              <div
-                id="panel"
-                className={
-                  this.state.open == -1
-                    ? "ticket-container"
-                    : "ticket-container-shrink"
-                }>
-                <div className="ticket-panel">
-                  <div className="ticket-header">
-                    <h4 style={{ marginTop: -2 }}>Active Tickets</h4>
-                    <div className="ticket-action-bar">
-                      {this.state.open == -1 && (
-                        <h4 style={{ color: "#6C7577" }}>Manage Tickets</h4>
-                      )}
-                      <a href="/new-ticket" style={{ textDecoration: "none" }}>
-                        <h4 style={{ color: "#0C58EF" }}>+ New Ticket</h4>
-                      </a>
-                    </div>
-                  </div>
-                  {this.state.posts.map((ticket, index) => {
-                    return (
-                      <div
-                        className="ticket-item"
-                        onClick={() => {
-                          this.state.open == -1
-                            ? this.setState({ open: index })
-                            : this.setState({ open: -1 });
-                        }}>
-                        <div
-                          style={{
-                            display: "inline-flex",
-                            gap: 16,
-                            minWidth: "100%",
-                          }}>
-                          <div className="ticket-preview">
-                            <img src={profilePlaceholder} />
-                            <Label status={ticket.status} />
-                          </div>
-                          <div className="ticket-text">
-                            <h3>{ticket.title}</h3>
-                            <div className="ticket-description">
-                              <p>{ticket.comments}</p>
-                            </div>
-                            <p>
-                              <strong>Created By:</strong>{" "}
-                              {ticket.username.charAt(0).toUpperCase() +
-                                ticket.username.slice(1)}
-                              &nbsp;&nbsp;&nbsp;<strong>Domain:</strong>{" "}
-                              {ticket.domainURL}
-                            </p>
-                          </div>
-                          {getAuthLevel() == "admin" && (
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                marginLeft: "auto",
-                              }}>
-                              {ticket.status == "closed" ? (
-                                <div
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    this.open(ticket._id, ticket.chat);
-                                  }}>
-                                  <img
-                                    style={{ cursor: "pointer" }}
-                                    src={openTicket}
-                                  />
-                                </div>
-                              ) : (
-                                <div
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    this.close(ticket._id);
-                                  }}>
-                                  <img
-                                    style={{ cursor: "pointer" }}
-                                    src={closeTicket}
-                                  />
-                                </div>
-                              )}
-                              <div
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  this.edit(ticket._id);
-                                }}>
-                                <img
-                                  style={{ cursor: "pointer" }}
-                                  src={editTicket}
-                                />
-                              </div>
-                              <div
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  this.delete(ticket._id);
-                                }}>
-                                <img
-                                  style={{ cursor: "pointer" }}
-                                  src={deleteTicket}
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </div>
+              {!this.state.isExpand && (
+                <div
+                  id="panel"
+                  className={
+                    this.state.open == -1
+                      ? "ticket-container"
+                      : "ticket-container-shrink"
+                  }>
+                  <div className="ticket-panel">
+                    <div className="ticket-header">
+                      <h4 style={{ marginTop: -2 }}>Active Tickets</h4>
+                      <div className="ticket-action-bar">
+                        {this.state.open == -1 && (
+                          <h4 style={{ color: "#6C7577" }}>Manage Tickets</h4>
+                        )}
+                        <a
+                          href="/new-ticket"
+                          style={{ textDecoration: "none" }}>
+                          <h4 style={{ color: "#0C58EF" }}>+ New Ticket</h4>
+                        </a>
                       </div>
-                    );
-                  })}
+                    </div>
+                    {this.state.posts.map((ticket, index) => {
+                      return (
+                        <div
+                          className="ticket-item"
+                          onClick={() => {
+                            this.state.open == -1
+                              ? this.setState({ open: index, isExpand: false })
+                              : this.setState({ open: -1, isExpand: false });
+                          }}>
+                          <div
+                            style={{
+                              display: "inline-flex",
+                              gap: 16,
+                              minWidth: "100%",
+                            }}>
+                            <div className="ticket-preview">
+                              <img src={profilePlaceholder} />
+                              <Label status={ticket.status} />
+                            </div>
+                            <div className="ticket-text">
+                              <h3>{ticket.title}</h3>
+                              <div className="ticket-description">
+                                <p>{ticket.comments}</p>
+                              </div>
+                              <p>
+                                <strong>Created By:</strong>{" "}
+                                {ticket.username.charAt(0).toUpperCase() +
+                                  ticket.username.slice(1)}
+                                &nbsp;&nbsp;&nbsp;<strong>Domain:</strong>{" "}
+                                {ticket.domainURL}
+                              </p>
+                            </div>
+                            {getAuthLevel() == "admin" && (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  marginLeft: "auto",
+                                }}>
+                                {ticket.status == "closed" ? (
+                                  <div
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      this.open(ticket._id, ticket.chat);
+                                    }}>
+                                    <img
+                                      style={{ cursor: "pointer" }}
+                                      src={openTicket}
+                                    />
+                                  </div>
+                                ) : (
+                                  <div
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      this.close(ticket._id);
+                                    }}>
+                                    <img
+                                      style={{ cursor: "pointer" }}
+                                      src={closeTicket}
+                                    />
+                                  </div>
+                                )}
+                                <div
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    this.edit(ticket._id);
+                                  }}>
+                                  <img
+                                    style={{ cursor: "pointer" }}
+                                    src={editTicket}
+                                  />
+                                </div>
+                                <div
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    this.delete(ticket._id);
+                                  }}>
+                                  <img
+                                    style={{ cursor: "pointer" }}
+                                    src={deleteTicket}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {this.state.open != -1 && this.state.posts[this.state.open] && (
-                <div className="chat-panel">
-                  <ChatInfo post={this.state.posts[this.state.open]} />
+                <div
+                  className="chat-panel"
+                  style={{ marginLeft: this.state.isExpand && 12 }}>
+                  <ChatInfo
+                    post={this.state.posts[this.state.open]}
+                    handleExpand={() =>
+                      this.setState({ isExpand: !this.state.isExpand })
+                    }
+                  />
                   <Chat
                     post={this.state.posts[this.state.open]}
                     callback={this.updatePosts}

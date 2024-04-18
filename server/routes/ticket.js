@@ -81,6 +81,7 @@ router.route("/update/:id").post(async (req, res) => {
     "category",
     "title",
     "priority",
+    "deadline",
     "domainURL",
     "comments",
     "status",

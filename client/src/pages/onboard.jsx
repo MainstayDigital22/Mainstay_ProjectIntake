@@ -167,6 +167,10 @@ export default class OnBoard extends Component {
         errors["urls"] = "One or more URLs are invalid";
       }
     }
+    if (this.state.categories.length == 0) {
+      formIsValid = false;
+      errors["categories"] = "Must select a service";
+    }
     console.log(errors);
     this.setState({ errors });
     return formIsValid;
@@ -564,6 +568,11 @@ export default class OnBoard extends Component {
                             </div>
                           </div>
                         </div>
+                        {this.state.errors.categories && (
+                          <p className="form-error">
+                            {this.state.errors.categories}
+                          </p>
+                        )}
                         {(this.state.categories.includes("4") ||
                           this.state.categories.includes("5")) && (
                           <div style={{ marginBottom: 20 }} id="dropdown">

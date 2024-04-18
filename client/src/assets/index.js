@@ -17,3 +17,4 @@ export { default as deleteTicket } from "./images/deleteticket.png";
 export { default as editTicket } from "./images/editticket.png";
 export { default as closeTicket } from "./images/closeticket.png";
 export { default as openTicket } from "./images/openticket.png";
+export { default as expand } from "./images/expand.png";

@@ -1,7 +1,8 @@
 import React from "react";
 import { Label } from "./label";
+import { expand } from "../assets";
 
-export function ChatInfo({ post }) {
+export function ChatInfo({ post, handleExpand }) {
   const options = {
     timeZone: "America/Chicago",
     month: "short",
@@ -25,6 +26,11 @@ export function ChatInfo({ post }) {
         </div>
         <div style={{ marginLeft: 24 }}>
           <p>{post._id}</p>
+        </div>
+        <div
+          style={{ marginLeft: "auto", marginTop: -6 }}
+          onClick={handleExpand}>
+          <img src={expand} />
         </div>
       </div>
       <div className="chat-info-2">

@@ -40,7 +40,7 @@ class Ticket extends Component {
   };
   handleDateChange = (date) => {
     this.setState({
-      deadline: date,
+      deadline: new Date(date),
     });
   };
   handleChangeOrg = (event) => {
@@ -50,7 +50,7 @@ class Ticket extends Component {
       this.state.orgs.find((item) => item._id === value).categories || [];
     const companyUrls =
       this.state.orgs.find((item) => item._id === value).companyWebsite || [];
-    const domainURL = companyUrls[0] || undefined;
+    const domainURL = this.state.domainURL || companyUrls[0] || undefined;
     this.setState({ categories, companyUrls, domainURL });
   };
   handleChange = (event) => {
@@ -103,10 +103,17 @@ class Ticket extends Component {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       .then((res) => {
+        console.log(res.data[0]);
         this.setState((prevState) => ({
           ...prevState,
           ...res.data[0],
         }));
+        this.setState({
+          org: res.data[0].organization._id,
+        });
+        const categories = res.data[0].organization.categories || [];
+        const companyUrls = res.data[0].organization.companyWebsite || [];
+        this.setState({ categories, companyUrls });
       })
       .catch((err) => {
         console.log(err.response || err);
@@ -206,12 +213,15 @@ class Ticket extends Component {
                     <p className="form-error">{"Title is required"}</p>
                   )}
                   <h5>Domain URL</h5>
+
                   <select
                     name="domainURL"
                     onChange={this.handleChange}
                     className="form-control">
                     {this.state.companyUrls?.map((domain) => (
-                      <option value={domain} selected={this.state.domainURL}>
+                      <option
+                        value={domain}
+                        selected={domain == this.state.domainURL}>
                         {domain}
                       </option>
                     ))}
