@@ -3,6 +3,8 @@ const Organization = require("../schemas/organization");
 let User = require("../schemas/user");
 const { auth } = require("./auth");
 const mongoose = require("mongoose");
+const { deleteFile } = require("./upload");
+const Ticket = require("../schemas/ticket");
 
 /* add delete
  let media = ticket[0].branding.files || [];
@@ -140,6 +142,50 @@ router.route("/withusers/:id").get(async (req, res) => {
     });
   } catch (err) {
     res.status(400).json("Error: " + err);
+  }
+});
+
+router.delete("/:orgId", async (req, res) => {
+  const { orgId } = req.params;
+  try {
+    if ((await auth(req, ["admin"])) !== 1) {
+      return res.status(403).json("Auth Error");
+    }
+
+    const organization = await Organization.findById(orgId);
+    if (!organization) {
+      return res.status(404).json("Organization not found");
+    }
+    await Ticket.deleteMany({ organization: orgId });
+
+    if (organization.branding && organization.branding.files) {
+      for (const fileUrl of organization.branding.files) {
+        const filename = fileUrl.split("/").pop();
+        await deleteFile(filename);
+      }
+    }
+
+    if (organization.branding && organization.branding.designDocument) {
+      for (const fileUrl of organization.branding.designDocument) {
+        const filename = fileUrl.split("/").pop();
+        await deleteFile(filename);
+      }
+    }
+
+    if (organization.legalDocuments) {
+      for (const fileUrl of organization.legalDocuments) {
+        const filename = fileUrl.split("/").pop();
+        await deleteFile(filename);
+      }
+    }
+
+    await Organization.findByIdAndRemove(orgId);
+    res.json({
+      message: "Organization and associated tickets deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting organization: ", error);
+    res.status(500).json("Error: " + error.message);
   }
 });
 

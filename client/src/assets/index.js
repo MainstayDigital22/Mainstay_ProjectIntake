@@ -18,3 +18,5 @@ export { default as editTicket } from "./images/editticket.png";
 export { default as closeTicket } from "./images/closeticket.png";
 export { default as openTicket } from "./images/openticket.png";
 export { default as expand } from "./images/expand.png";
+export { default as loginbg } from "./images/loginbg.png";
+export { default as logoblue } from "./images/logoblue.png";

@@ -322,7 +322,7 @@ class Ticket extends Component {
                     <input
                       id="submit"
                       onClick={this.submit}
-                      className="chat-btn"
+                      className="btn-onboard"
                       value={this.state._id ? "Edit Ticket" : "Create Ticket"}
                     />
                   </div>

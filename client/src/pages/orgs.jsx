@@ -1,6 +1,7 @@
 import React from "react";
 import axios from "axios";
 import { HOST } from "../const";
+import { getAuthToken } from "../components/auth";
 
 const styles = {
   container: {
@@ -34,6 +35,15 @@ const styles = {
     textAlign: "center",
     color: "#ff6b6b",
   },
+  button: {
+    cursor: "pointer",
+    padding: "8px 16px",
+    backgroundColor: "#f44336",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    margin: "5px",
+  },
 };
 
 class Orgs extends React.Component {
@@ -64,6 +74,23 @@ class Orgs extends React.Component {
       });
   };
 
+  deleteOrganization = (orgId) => {
+    axios
+      .delete(`${HOST}/organization/${orgId}`, {
+        headers: { Authorization: `Bearer ${getAuthToken()}` },
+      })
+      .then(() => {
+        const updatedOrgs = this.state.organizations.filter(
+          (org) => org._id !== orgId
+        );
+        this.setState({ organizations: updatedOrgs });
+      })
+      .catch((error) => {
+        console.error("Error deleting organization:", error);
+        alert("Failed to delete organization");
+      });
+  };
+
   render() {
     const { organizations, isLoading, error } = this.state;
 
@@ -90,6 +117,11 @@ class Orgs extends React.Component {
                   </li>
                 ))}
               </ul>
+              <button
+                style={styles.button}
+                onClick={() => this.deleteOrganization(org._id)}>
+                Delete Organization
+              </button>
             </div>
           </div>
         ))}

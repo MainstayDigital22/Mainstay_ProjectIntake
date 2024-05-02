@@ -5,6 +5,7 @@ import { useLocation } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
 import building from "../assets/images/building.jpg";
 import { HOST } from "../const";
+import { loginbg, logoblue } from "../assets";
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -41,24 +42,22 @@ const Login = () => {
   return (
     <div className="container-p">
       <div className="row limit">
-        <div className="col-6 split">
-          <img src={building} style={{ height: "100%" }} />
-        </div>
         <GlobalStyles />
-        <div className="col-6 split">
-          <form className="login" onSubmit={handleSubmit}>
-            <div style={{ justifyContent: "center", textAlign: "center" }}>
-              {signupSuccess && (
-                <div className="successMessage">
-                  Signup successful! Please log in.
-                </div>
-              )}
-              <h3>Log In</h3>
-              <p style={{ fontSize: 11, marginTop: -6, color: "#999999" }}>
-                Enter your credentials to get started
-              </p>
-            </div>
-
+        <form className="login" onSubmit={handleSubmit}>
+          <div
+            style={{
+              justifyContent: "center",
+              textAlign: "center",
+              marginBottom: 58,
+            }}>
+            {signupSuccess && (
+              <div className="successMessage">
+                Signup successful! Please log in.
+              </div>
+            )}
+            <img src={logoblue} style={{ width: 352 }} />
+          </div>
+          <div>
             <label>Username:</label>
             <input
               type="username"
@@ -77,21 +76,21 @@ const Login = () => {
             <span
               style={{
                 display: "flex",
-                justifyContent: "right",
-                marginTop: 12,
+                justifyContent: "center",
+                marginTop: 22,
                 fontSize: 15,
               }}>
-              <p style={{ display: "inline-block" }}>
-                Need an account?&nbsp;&nbsp;
+              <p style={{ display: "inline-block", color: "#C9C9C9" }}>
+                Don't have an account?&nbsp;&nbsp;
               </p>
               <a href="/signup">
                 <p style={{ display: "inline-block", color: "#0b59ef" }}>
-                  Sign Up
+                  Create One
                 </p>
               </a>
             </span>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -105,11 +104,12 @@ const GlobalStyles = createGlobalStyle`
 
 /* layout */
 :root {
-  --primary: #0b59ef;
+  --primary: #0C58EF;
   --error: #e7195a;
+  
 }
 body {
-  background: #f1f1f1;
+  background-image: url(${loginbg});
   font-family: "Poppins";
 }
 .limit{
@@ -119,7 +119,8 @@ header {
   background: #fff;
 }
 .container-p {
-  width:98%;
+  width:99%;
+  
 }
 header a {
   color: #333;
@@ -144,17 +145,17 @@ header a {
 
 /* new workout form */
 label, input {
-  
+  font-family: Satoshi;
+  font-weight: 500;
+  font-size:18px;
   display: block;
 }
 input {
-  
+  border: 1px solid #0C58EF;
   padding: 10px;
   margin-top: 10px;
   margin-bottom: 20px;
   width: 100%;
-  border: 1px solid #ddd;
-  border-radius: 4px;
   box-sizing: border-box;
 }
 form button {
@@ -164,7 +165,7 @@ form button {
   color: #fff;
   width: 100%;
   padding: 10px;
-  font-family: "Poppins";
+  font-family: "Satoshi";
   border-radius: 4px;
   cursor: pointer;
 }
@@ -196,11 +197,12 @@ nav button {
 
 /* auth forms */
 form.signup, form.login {
-  width: 400px;
+  width: 464px;
   margin:auto;
-  padding: 20px 20px 0px 20px;
+  padding: 48px 24px 48px 24px;
   background: #fff;
   border-radius: 4px;
+  gap:56px;
 }
 
 .postreview{
@@ -209,5 +211,6 @@ form.signup, form.login {
     padding: 20px;
     background: #fff;
     border-radius: 4px;
+    
   }
 `;

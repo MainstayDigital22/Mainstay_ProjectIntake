@@ -5,6 +5,7 @@ import { createGlobalStyle } from "styled-components";
 import { HOST } from "../const";
 import building from "../assets/images/building.jpg";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { loginbg } from "../assets";
 const SignUp = () => {
   const [username, setUsername] = useState("");
   const [firstname, setFirstname] = useState("");
@@ -50,89 +51,87 @@ const SignUp = () => {
   return (
     <div className="container-p">
       <div className="row limit">
-        <div className="col-6 split">
-          <img src={building} style={{ height: "100%" }} alt="Building" />
-        </div>
-        <div className="col-6 split">
-          <form className="signup" onSubmit={handleSubmit}>
-            <GlobalStyles />
-            <div style={{ justifyContent: "center", textAlign: "center" }}>
-              <h3>Sign Up</h3>
-              <p style={{ fontSize: 11, marginTop: -6, color: "#999999" }}>
-                Fill in the details to create your account
-              </p>
+        <form className="signup" onSubmit={handleSubmit}>
+          <GlobalStyles />
+          <div style={{ justifyContent: "center", textAlign: "center" }}>
+            <h3>Sign Up</h3>
+            <p style={{ fontSize: 11, marginTop: -6, color: "#999999" }}>
+              Fill in the details to create your account
+            </p>
+          </div>
+
+          <label>Username:</label>
+          <input
+            type="text"
+            onChange={(e) => setUsername(e.target.value)}
+            value={username}
+          />
+          <div className="row">
+            <div className="col">
+              <label>First Name:</label>
+              <input
+                type="text"
+                onChange={(e) => setFirstname(e.target.value)}
+                value={firstname}
+              />
             </div>
+            <div className="col">
+              <label>Last Name:</label>
+              <input
+                type="text"
+                onChange={(e) => setLastname(e.target.value)}
+                value={lastname}
+              />
+            </div>
+          </div>
+          <label>Password:</label>
+          <input
+            type="password"
+            onChange={(e) => setPassword(e.target.value)}
+            value={password}
+          />
 
-            <label>Username:</label>
-            <input
-              type="text"
-              onChange={(e) => setUsername(e.target.value)}
-              value={username}
-            />
+          <label>Confirm Password:</label>
+          <input
+            type="password"
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            value={confirmPassword}
+          />
 
-            <label>First Name:</label>
-            <input
-              type="text"
-              onChange={(e) => setFirstname(e.target.value)}
-              value={firstname}
-            />
+          <label>Email:</label>
+          <input
+            type="email"
+            onChange={(e) => setEmail(e.target.value)}
+            value={email}
+          />
 
-            <label>Last Name:</label>
-            <input
-              type="text"
-              onChange={(e) => setLastname(e.target.value)}
-              value={lastname}
-            />
+          <label>Phone:</label>
+          <input
+            type="tel"
+            onChange={(e) => setPhone(e.target.value)}
+            value={phone}
+          />
 
-            <label>Password:</label>
-            <input
-              type="password"
-              onChange={(e) => setPassword(e.target.value)}
-              value={password}
-            />
+          <button type="submit">Sign Up</button>
+          {errmsg && <label style={{ color: "red" }}>{errmsg}</label>}
 
-            <label>Confirm Password:</label>
-            <input
-              type="password"
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              value={confirmPassword}
-            />
-
-            <label>Email:</label>
-            <input
-              type="email"
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
-            />
-
-            <label>Phone:</label>
-            <input
-              type="tel"
-              onChange={(e) => setPhone(e.target.value)}
-              value={phone}
-            />
-
-            <button type="submit">Sign Up</button>
-            {errmsg && <label style={{ color: "red" }}>{errmsg}</label>}
-
-            <span
-              style={{
-                display: "flex",
-                justifyContent: "right",
-                marginTop: 12,
-                fontSize: 15,
-              }}>
-              <p style={{ display: "inline-block" }}>
-                Already have an account?&nbsp;&nbsp;
+          <span
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: 22,
+              fontSize: 15,
+            }}>
+            <p style={{ display: "inline-block" }}>
+              Already have an account?&nbsp;&nbsp;
+            </p>
+            <a href="/login">
+              <p style={{ display: "inline-block", color: "#0b59ef" }}>
+                Log In
               </p>
-              <a href="/login">
-                <p style={{ display: "inline-block", color: "#0b59ef" }}>
-                  Log In
-                </p>
-              </a>
-            </span>
-          </form>
-        </div>
+            </a>
+          </span>
+        </form>
       </div>
     </div>
   );
@@ -146,11 +145,12 @@ const GlobalStyles = createGlobalStyle`
 
 /* layout */
 :root {
-  --primary: #0b59ef;
+  --primary: #0C58EF;
   --error: #e7195a;
+  
 }
 body {
-  background: #f1f1f1;
+  background-image: url(${loginbg});
   font-family: "Poppins";
 }
 .limit{
@@ -160,11 +160,22 @@ header {
   background: #fff;
 }
 .container-p {
-  width:98%;
+  width:99%;
+  
 }
 header a {
   color: #333;
   text-decoration: none;
+}
+.successMessage {
+  color: #77cc77;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 15px;
+  margin: auto;
+  margin-bottom:10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 .split{
   height:100%;
@@ -175,17 +186,17 @@ header a {
 
 /* new workout form */
 label, input {
-  
+  font-family: Satoshi;
+  font-weight: 500;
+  font-size:18px;
   display: block;
 }
 input {
-  
+  border: 1px solid #0C58EF;
   padding: 10px;
   margin-top: 10px;
   margin-bottom: 20px;
   width: 100%;
-  border: 1px solid #ddd;
-  border-radius: 4px;
   box-sizing: border-box;
 }
 form button {
@@ -195,7 +206,7 @@ form button {
   color: #fff;
   width: 100%;
   padding: 10px;
-  font-family: "Poppins";
+  font-family: "Satoshi";
   border-radius: 4px;
   cursor: pointer;
 }
@@ -227,11 +238,12 @@ nav button {
 
 /* auth forms */
 form.signup, form.login {
-  width: 400px;
+  width: 464px;
   margin:auto;
-  padding: 20px 20px 0px 20px;
+  padding: 48px 24px 48px 24px;
   background: #fff;
   border-radius: 4px;
+  gap:56px;
 }
 
 .postreview{
@@ -240,5 +252,6 @@ form.signup, form.login {
     padding: 20px;
     background: #fff;
     border-radius: 4px;
+    
   }
 `;

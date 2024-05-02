@@ -13,10 +13,20 @@ router.route("/").get(async function (req, res) {
     res.status(403).json("Auth Error");
     return;
   }
-  User.find()
+  User.aggregate([
+    {
+      $lookup: {
+        from: "organizations",
+        localField: "_id",
+        foreignField: "users",
+        as: "organizations",
+      },
+    },
+  ])
     .then((users) => res.json(users))
     .catch((err) => res.status(400).json("Error: " + err));
 });
+
 router.route("/add").post(async function (req, res) {
   if ((await auth(req, ["admin"])) !== 1) {
     res.status(403).json("Auth Error");

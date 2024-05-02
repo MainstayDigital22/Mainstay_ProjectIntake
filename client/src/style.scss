@@ -543,6 +543,39 @@ p {
   color: white;
 }
 
+.user-table {
+  width: 100%;
+  font-family: "Satoshi";
+  justify-content: center;
+  text-align: center;
+}
+
+.user-table thead {
+  height: 50px;
+  background-color: #f5f6fa;
+  font-family: "Satoshi";
+  justify-content: center;
+  text-align: center;
+}
+
+.pagination {
+  height: 50px;
+  background-color: #f5f6fa;
+  font-family: "Satoshi";
+  justify-content: center;
+  text-align: center;
+  display: flex;
+  gap: 10px;
+}
+.pagination p {
+  margin-top: 12px !important;
+}
+
+.user-table td {
+  height: 82px;
+  background-color: #ffffff;
+}
+
 .page-title {
   font-family: Satoshi;
   font-size: 32px;
@@ -845,6 +878,9 @@ a {
   border-radius: 10px;
   border: dashed 3px #dddddd;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .d-create-file #get_file {
   margin: 0 auto;
@@ -873,11 +909,52 @@ a {
   margin-left: 10px;
   font-size: 15px;
 }
+
+.btn-onboard {
+  width: 180px;
+  border-radius: 0px;
+  height: 40px;
+  cursor: pointer;
+  padding: 5px 10px !important;
+  gap: 10px;
+  display: flex;
+  flex-direction: row;
+  background-color: #0c58ef;
+  font-family: Satoshi;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 24px;
+  color: white;
+  letter-spacing: 0em;
+  text-align: center;
+}
+
+.btn-small {
+  border-radius: 0px;
+  height: 30px;
+  cursor: pointer;
+  padding: 0px 10px !important;
+  margin-top: auto;
+  margin-bottom: auto;
+  gap: 10px;
+  display: flex;
+  flex-direction: row;
+  background-color: #0c58ef;
+  font-family: Satoshi;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 24px;
+  color: white;
+  letter-spacing: 0em;
+  text-align: center;
+}
 .form-control {
   padding: 8px;
   margin-bottom: 20px;
   border: none;
-  border: solid 1px #cccccc;
+  border: 1px solid #0c58ef !important;
   background: none;
   border-radius: 6px;
   -moz-border-radius: 6px;
@@ -887,6 +964,15 @@ a {
   -moz-box-shadow: none;
   -webkit-box-shadow: none;
   color: #333;
+}
+
+select {
+  height: 58px !important;
+}
+
+.css-b62m3t-container {
+  height: 58px !important;
+  margin-top: 1px !important;
 }
 
 .hide {

@@ -167,7 +167,7 @@ export default class OnBoard extends Component {
         errors["urls"] = "One or more URLs are invalid";
       }
     }
-    if (this.state.categories.length == 0) {
+    if (this.state.categories.length == 0 && this.state.org == "__new_org") {
       formIsValid = false;
       errors["categories"] = "Must select a service";
     }
@@ -457,10 +457,10 @@ export default class OnBoard extends Component {
                         </div>
                         <div className="row">
                           <div className="col">
-                            <h5>Legal Documents</h5>
+                            <h5>Documents</h5>
                             <div className="d-create-file">
                               <p id="file_name">
-                                Upload Your Legal Documents Here
+                                Upload Your Company Documents Here
                               </p>
                               {this.state.legalDocuments.map((x) => (
                                 <p key={x.name}>{x.name}</p>
@@ -468,7 +468,7 @@ export default class OnBoard extends Component {
                               <div className="browse">
                                 <input
                                   type="button"
-                                  className="btn-main"
+                                  className="btn-onboard"
                                   id="get_file"
                                   value="Browse"
                                 />
@@ -489,8 +489,8 @@ export default class OnBoard extends Component {
                             </div>
                           </div>
                         </div>
-                        <h5 style={{ marginTop: 12 }}>Services</h5>
-                        <div className="row" style={{ marginBottom: 12 }}>
+                        <h5 style={{ marginTop: 20 }}>Services</h5>
+                        <div className="row" style={{ marginBottom: 24 }}>
                           <div className="col">
                             <div className="form-check">
                               <input
@@ -625,7 +625,7 @@ export default class OnBoard extends Component {
                                     <div className="browse">
                                       <input
                                         type="button"
-                                        className="btn-main"
+                                        className="btn-onboard"
                                         id="get_file"
                                         value="Browse"
                                       />
@@ -659,7 +659,7 @@ export default class OnBoard extends Component {
                                     <div className="browse">
                                       <input
                                         type="button"
-                                        className="btn-main"
+                                        className="btn-onboard"
                                         id="get_file"
                                         value="Browse"
                                       />
@@ -925,6 +925,7 @@ export default class OnBoard extends Component {
                             />
                           </>
                         )}
+                        <div style={{ marginTop: 8 }}></div>
                         <h5>Company Description</h5>
                         <textarea
                           name="description"
@@ -1080,7 +1081,7 @@ export default class OnBoard extends Component {
                       type="button"
                       id="submit"
                       onClick={this.submit}
-                      className="btn-main"
+                      className="btn-onboard"
                       value="Update Client"
                     />
                   </div>
