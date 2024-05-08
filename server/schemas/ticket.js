@@ -23,9 +23,10 @@ const ticketSchema = new Schema({
     type: [
       {
         isClient: { type: Boolean, required: true },
-        message: { type: String, required: true },
+        messageType: { type: String, required: true, enum: ["text", "file"] },
+        content: { type: String, required: true },
         username: { type: String, required: true },
-        time: Date,
+        time: { type: Date, default: Date.now },
       },
     ],
   },

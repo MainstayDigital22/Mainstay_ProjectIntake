@@ -19,6 +19,7 @@ import {
 import { HOST } from "../const";
 import { Label } from "../components/label";
 import { ChatInfo } from "../components/chatinfo";
+import ticket from "./ticket";
 class Review extends Component {
   constructor(props) {
     super(props);
@@ -36,6 +37,9 @@ class Review extends Component {
       isExpand: false,
       height: 0,
       toggleList: true,
+      showSortDropdown: false,
+      sortBy: "priority",
+      searchKeyword: "",
     };
     this.onImgLoad = this.onImgLoad.bind(this);
   }
@@ -47,6 +51,80 @@ class Review extends Component {
       });
     }
   }
+  handleSortBy = (method) => {
+    this.setState({ sortBy: method });
+    this.sortTickets(method);
+  };
+
+  handleSearchChange = (event) => {
+    this.setState({ searchKeyword: event.target.value }, () => {
+      this.updatePosts();
+    });
+  };
+
+  sortTickets = (sortBy) => {
+    let tickets = [...this.state.posts];
+
+    switch (sortBy) {
+      case "priority":
+        const priorityMap = {
+          ASAP: 1,
+          high: 2,
+          medium: 3,
+          low: 4,
+        };
+        tickets.sort(
+          (a, b) => priorityMap[a.priority] - priorityMap[b.priority]
+        );
+        break;
+      case "dueDate":
+        tickets.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        break;
+      case "name":
+        tickets.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case "status":
+        tickets.sort((a, b) => a.status.localeCompare(b.status));
+        break;
+      default:
+        console.warn("No valid sort method provided");
+        break;
+    }
+
+    console.log(tickets);
+    this.setState({ posts: tickets });
+  };
+
+  getSortTickets = (tickets) => {
+    switch (this.state.sortBy) {
+      case "priority":
+        const priorityMap = {
+          ASAP: 1,
+          high: 2,
+          medium: 3,
+          low: 4,
+        };
+        tickets.sort(
+          (a, b) => priorityMap[a.priority] - priorityMap[b.priority]
+        );
+        break;
+      case "dueDate":
+        tickets.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        break;
+      case "name":
+        tickets.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case "status":
+        tickets.sort((a, b) => a.status.localeCompare(b.status));
+        break;
+      default:
+        console.warn("No valid sort method provided");
+        break;
+    }
+
+    return tickets;
+  };
+
   handleDelete = (id) => {
     if (!window.confirm(`Are you sure you want to delete this ticket?`)) {
       return;
@@ -124,9 +202,26 @@ class Review extends Component {
         if (len != posts.length) {
           this.setState({ open: -1 });
         }
-        const filteredPosts = posts.filter((post) =>
+        let filteredPosts = posts.filter((post) =>
           filters.includes(post.status)
         );
+        if (this.state.searchKeyword) {
+          filteredPosts = filteredPosts.filter(
+            (post) =>
+              post.title
+                .toLowerCase()
+                .includes(this.state.searchKeyword.toLowerCase()) ||
+              (post.organization &&
+                post.organization.companyName
+                  .toLowerCase()
+                  .includes(this.state.searchKeyword.toLowerCase())) ||
+              (post.domainURL &&
+                post.domainURL
+                  .toLowerCase()
+                  .includes(this.state.searchKeyword.toLowerCase()))
+          );
+        }
+        filteredPosts = this.getSortTickets(filteredPosts);
         this.setState({
           posts:
             getAuthLevel() == "client"
@@ -265,6 +360,16 @@ class Review extends Component {
   render() {
     return (
       <div className="container">
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="Search by title, company, or domain..."
+            value={this.state.searchKeyword}
+            onChange={this.handleSearchChange}
+            style={{ width: "100%", padding: "10px", marginBottom: "20px" }}
+          />
+        </div>
+
         <div className="row welcome-ticket">
           <div className="col title">
             <h1>Welcome {getAuthUser()}!</h1>
@@ -400,14 +505,73 @@ class Review extends Component {
                     <div className="ticket-header">
                       <h4 style={{ marginTop: -2 }}>Active Tickets</h4>
                       <div className="ticket-action-bar">
-                        {this.state.open == -1 && (
-                          <h4 style={{ color: "#6C7577" }}>Manage Tickets</h4>
+                        {this.state.open === -1 && (
+                          <>
+                            <h4
+                              style={{
+                                color: "#6C7577",
+                                marginRight: "10px",
+                                textAlign: "right",
+                              }}>
+                              Sort By:
+                            </h4>
+                            {!this.state.showSortDropdown && (
+                              <div
+                                onClick={() =>
+                                  this.setState({
+                                    showSortDropdown:
+                                      !this.state.showSortDropdown,
+                                  })
+                                }
+                                style={{
+                                  cursor: "pointer",
+
+                                  display: "inline-block",
+                                }}>
+                                <h4
+                                  style={{
+                                    textAlign: "left",
+                                    color: "#0758ef",
+                                    width: 91.5,
+                                  }}>
+                                  {this.state.sortBy.charAt(0).toUpperCase() +
+                                    this.state.sortBy.slice(1) || "Select"}
+                                </h4>
+                              </div>
+                            )}
+                            {this.state.showSortDropdown && (
+                              <div className="custom-dropdown-menu">
+                                {["priority", "dueDate", "name", "status"].map(
+                                  (option) => (
+                                    <div
+                                      key={option}
+                                      onClick={() => {
+                                        this.handleSortBy(option);
+                                        this.setState({
+                                          showSortDropdown: false,
+                                        });
+                                      }}
+                                      style={{
+                                        padding: "8px 12px",
+                                        cursor: "pointer",
+                                        backgroundColor:
+                                          this.state.sortBy === option
+                                            ? "#007bff"
+                                            : "#ffffff",
+                                        color:
+                                          this.state.sortBy === option
+                                            ? "#ffffff"
+                                            : "#000000",
+                                      }}>
+                                      {option.charAt(0).toUpperCase() +
+                                        option.slice(1)}
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            )}
+                          </>
                         )}
-                        <a
-                          href="/new-ticket"
-                          style={{ textDecoration: "none" }}>
-                          <h4 style={{ color: "#0C58EF" }}>+ New Ticket</h4>
-                        </a>
                       </div>
                     </div>
                     {this.state.posts.map((ticket, index) => {

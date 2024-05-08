@@ -114,7 +114,7 @@ class Users extends Component {
             </div>
           </div>
         ) : (
-          <p>No users to display</p>
+          <p></p>
         )}
       </>
     );

@@ -18,28 +18,34 @@ export function Chat({ post, callback }) {
   const [chatInput, setChatInput] = useState("");
   let message =
     chat.length !== 0
-      ? chat.map((msg) => ({
-          type: "text",
-          user: msg.username,
-          text: msg.message,
-          time: msg.time,
-          isClient: msg.isClient,
-        }))
+      ? chat
+          .filter((msg) => msg.messageType === "text")
+          .map((msg) => ({
+            type: "text",
+            user: msg.username,
+            content: msg.content,
+            time: msg.time,
+            isClient: msg.isClient,
+          }))
       : undefined;
+
   const handleInputChange = (e) => {
     setChatInput(e.target.value);
   };
+
   const handleFormSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission behavior
-    await addChat(chatInput); // Add the chat message
+    await addChat(chatInput, "text"); // Add the chat message as text
     setChatInput(""); // Clear the input after sending
   };
-  const addChat = async (text) => {
+
+  const addChat = async (text, type) => {
     if (isSendingChat || !text.trim()) return;
 
     const newChatMessage = {
       isClient: getAuthLevel() === "client",
-      message: text,
+      content: text,
+      messageType: type, // Specify the type of the message
       username: getAuthUser(),
       time: Date.now(),
     };
@@ -47,7 +53,6 @@ export function Chat({ post, callback }) {
     // Optimistic UI update
     setChat((prevChat) => [...prevChat, newChatMessage]);
     setIsSendingChat(true);
-    setChatInput(""); // Clear input for immediate feedback
 
     try {
       const response = await axios.post(
@@ -68,6 +73,7 @@ export function Chat({ post, callback }) {
       callback();
     }
   };
+
   const options = {
     timeZone: "America/Chicago",
     month: "short",
@@ -77,6 +83,7 @@ export function Chat({ post, callback }) {
     minute: "numeric",
     hour12: true,
   };
+
   return (
     <div className="chat-messenger">
       {message &&
@@ -99,7 +106,6 @@ export function Chat({ post, callback }) {
                 <div
                   style={{
                     display: "flex",
-
                     flexDirection: "column",
                     width: "calc(100% - 85px)",
                   }}>
@@ -122,7 +128,7 @@ export function Chat({ post, callback }) {
                       style={{
                         textAlign: isRight ? "right" : "left",
                       }}>
-                      {msg.text}
+                      {msg.content}
                     </p>
                   </div>
                 </div>
